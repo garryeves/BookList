@@ -17,7 +17,6 @@
         <attribute name="role" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <entity name="Books" representedClassName="Books" syncable="YES" codeGenerationType="class">
-        <attribute name="attribute" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="averageRating" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="bookDescription" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="bookID" optional="YES" attributeType="String" syncable="YES"/>
@@ -35,6 +34,7 @@
         <attribute name="publicationDay" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="publicationMonth" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="publicationYear" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="published" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="publisherID" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="ratingsCount" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="smallImageURL" optional="YES" attributeType="String" syncable="YES"/>
