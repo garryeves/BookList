@@ -8,11 +8,11 @@
 
 import UIKit
 
-class iPhoneViewController: UIViewController
+class iPhoneViewController: UIViewController, UITableViewDataSource, UITableViewDelegate
 {
     @IBOutlet weak var tableBooks: UITableView!
     
-    var goodReads: GoodReadsData!
+    var googleData: GoogleBooks!
     
     private var headerCell: myBookHeader!
     
@@ -20,22 +20,22 @@ class iPhoneViewController: UIViewController
     {
         super.viewDidLoad()
         
-        notificationCenter.addObserver(self, selector: #selector(self.goodReadsBooksLoaded), name: goodReadsBookLoadFinished, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(self.googleDataBooksLoaded), name: goodReadsBookLoadFinished, object: nil)
         notificationCenter.addObserver(self, selector: #selector(self.reloadTable), name: reloadTableValues, object: nil)
         notificationCenter.addObserver(self, selector: #selector(self.updateState(_:)), name: sectionStateChanged, object: nil)
         
         headerCell = tableBooks.dequeueReusableCell(withIdentifier: "headerCell") as! myBookHeader
-        headerCell.goodReads = goodReads
+        headerCell.googleData = googleData
         
         tableBooks.tableHeaderView = headerCell
         
-        goodReadsBooksLoaded()
+        googleDataBooksLoaded()
         
-        if goodReads.isAuthenticated
+        if GIDSignIn.sharedInstance().hasAuthInKeychain()
         {
-            // Go and get the list of shelves from Goodreads, and then make sure we have populated them into the data table
+            // Go and get the list of shelves from googleData, and then make sure we have populated them into the data table
             
-            goodReads.getAllShelfBooks(page:1)
+            googleData.getBooks()
         }
         else
         {
@@ -55,14 +55,14 @@ class iPhoneViewController: UIViewController
     
     func numberOfSections(in tableView: UITableView) -> Int
     {
-        return goodReads.books.count
+        return googleData.books.count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
     {
-        if goodReads.books[section].state == showStatus
+        if googleData.books[section].state == showStatus
         {
-            return goodReads.books[section].books.count
+            return googleData.books[section].books.count
         }
         else
         {
@@ -74,13 +74,13 @@ class iPhoneViewController: UIViewController
     {
         let cell = tableView.dequeueReusableCell(withIdentifier: "bookCell")! as! myBookItem
         
-        //        cell.lblTitle.text = "\(goodReads.books[(indexPath as NSIndexPath).row].bookName) - \(goodReads.books[(indexPath as NSIndexPath).row].publishedDate)"
+        //        cell.lblTitle.text = "\(googleData.books[(indexPath as NSIndexPath).row].bookName) - \(googleData.books[(indexPath as NSIndexPath).row].publishedDate)"
         
-        cell.lblTitle.text = goodReads.books[indexPath.section].books[indexPath.row].bookName
+        cell.lblTitle.text = googleData.books[indexPath.section].books[indexPath.row].bookName
         
         var authorName = ""
         
-        for myItem in goodReads.books[indexPath.section].books[indexPath.row].authors
+        for myItem in googleData.books[indexPath.section].books[indexPath.row].authors
         {
             if authorName != ""
             {
@@ -94,7 +94,7 @@ class iPhoneViewController: UIViewController
         
         var shelfName = ""
         
-        for myItem in goodReads.books[indexPath.section].books[indexPath.row].shelves
+        for myItem in googleData.books[indexPath.section].books[indexPath.row].shelves
         {
             if shelfName != ""
             {
@@ -105,7 +105,7 @@ class iPhoneViewController: UIViewController
         }
         
         
-        cell.lblShelf.text = shelfName
+  //      cell.lblShelf.text = shelfName
         
         return cell
     }
@@ -136,7 +136,7 @@ class iPhoneViewController: UIViewController
         header.lblDescription.font = UIFont.boldSystemFont(ofSize: 16.0)
         header.btnDisclosure.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16.0)
         
-        if goodReads.books[section].state == showStatus
+        if googleData.books[section].state == showStatus
         {
             header.btnDisclosure.setTitle("-", for: .normal)
         }
@@ -146,9 +146,9 @@ class iPhoneViewController: UIViewController
         }
         
         header.section = section
-        header.currentState = goodReads.books[section].state
+        header.currentState = googleData.books[section].state
         
-        header.lblDescription.text = "\(goodReads.books[section].itemName) - \(goodReads.books[section].books.count) books"
+        header.lblDescription.text = "\(googleData.books[section].itemName) - \(googleData.books[section].books.count) books"
         
         return header
     }
@@ -159,7 +159,7 @@ class iPhoneViewController: UIViewController
         return 40.0
     }
     
-    func goodReadsBooksLoaded()
+    func googleDataBooksLoaded()
     {
         notificationCenter.removeObserver(goodReadsBookLoadFinished)
         
@@ -168,9 +168,9 @@ class iPhoneViewController: UIViewController
     
     func reloadTable()
     {
-        goodReads.sort()
+        googleData.sort()
         
-        switch goodReads.sortOrder
+        switch googleData.sortOrder
         {
         case sortOrderShelf :
             headerCell.btnShelf.isEnabled = false
@@ -181,7 +181,7 @@ class iPhoneViewController: UIViewController
             headerCell.btnShelf.isEnabled = true
             
         default:
-            print("ipadTableView: Set sort buttons - hit default for some reason - \(goodReads.sortOrder)")
+            print("ipadTableView: Set sort buttons - hit default for some reason - \(googleData.sortOrder)")
         }
         
         tableBooks.reloadData()
@@ -192,7 +192,7 @@ class iPhoneViewController: UIViewController
         let section = (notification as NSNotification).userInfo!["section"] as! Int
         let state = (notification as NSNotification).userInfo!["state"] as! String
         
-        goodReads.books[section].state = state
+        googleData.books[section].state = state
         
         reloadTable()
     }

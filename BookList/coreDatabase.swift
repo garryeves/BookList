@@ -76,6 +76,31 @@ class coreDatabase: NSObject
         }
     }
     
+    func getMinShelfID()->Int
+    {
+        var minID: Int = 0
+        let fetchRequest = NSFetchRequest<Shelves>(entityName: "Shelves")
+        
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "shelfID", ascending: false)]
+        
+        // Execute the fetch request, and cast the results to an array of  objects
+        do
+        {
+            let fetchResults = try persistentContainer.viewContext.fetch(fetchRequest)
+            
+            for myLoop in fetchResults
+            {
+                minID = Int(myLoop.shelfID!)!
+            }
+            
+        }
+        catch
+        {
+            print("Error ocurred during execution: \(error)")
+        }
+        return minID
+    }
+    
     func getShelf(shelfID: String)->[Shelves]
     {
         let fetchRequest = NSFetchRequest<Shelves>(entityName: "Shelves")
@@ -118,7 +143,7 @@ class coreDatabase: NSObject
         }
     }
     
-    func saveShelf(_ shelfID: String, shelfName: String)
+    func saveShelf(_ shelfID: String, shelfName: String, shelfLink: String)
     {
         let myShelf = getShelf(shelfID: shelfID)
         
@@ -129,12 +154,14 @@ class coreDatabase: NSObject
             
             mySelectedShelf.shelfID = shelfID
             mySelectedShelf.shelfName = shelfName
+            mySelectedShelf.shelfLink = shelfLink
             mySelectedShelf.changed = false
         }
         else
         {
             mySelectedShelf = myShelf[0]
             mySelectedShelf.shelfName = shelfName
+            mySelectedShelf.shelfLink = shelfLink
         }
         
         saveContext()
@@ -352,11 +379,11 @@ class coreDatabase: NSObject
         saveContext()
     }
 
-    func getBookAuthor(authorID: String)->[BookAuthors]
+    func getBookAuthor(authorName: String)->[BookAuthors]
     {
         let fetchRequest = NSFetchRequest<BookAuthors>(entityName: "BookAuthors")
         
-        let predicate = NSPredicate(format: "authorID == \"\(authorID)\"")
+        let predicate = NSPredicate(format: "authorName == \"\(authorName)\"")
         
         // Set the predicate on the fetch request
         fetchRequest.predicate = predicate
@@ -395,11 +422,11 @@ class coreDatabase: NSObject
         }
     }
     
-    func getBookAuthor(bookID: String, authorID: String)->[BookAuthors]
+    func getBookAuthor(bookID: String, authorName: String)->[BookAuthors]
     {
         let fetchRequest = NSFetchRequest<BookAuthors>(entityName: "BookAuthors")
         
-        let predicate = NSPredicate(format: "(bookID == \"\(bookID)\") && (authorID == \"\(authorID)\")")
+        let predicate = NSPredicate(format: "(bookID == \"\(bookID)\") && (authorID == \"\(authorName)\")")
         
         // Set the predicate on the fetch request
         fetchRequest.predicate = predicate
@@ -416,9 +443,9 @@ class coreDatabase: NSObject
         }
     }
     
-    func saveBookAuthor(_ bookID: String, authorID: String, role: String)
+    func saveBookAuthor(_ bookID: String, authorName: String, role: String)
     {
-        let myBook = getBookAuthor(bookID: bookID, authorID: authorID)
+        let myBook = getBookAuthor(bookID: bookID, authorName: authorName)
         
         var mySelectedBook: BookAuthors
         if myBook.count == 0
@@ -426,7 +453,7 @@ class coreDatabase: NSObject
             mySelectedBook = NSEntityDescription.insertNewObject(forEntityName: "BookAuthors", into: persistentContainer.viewContext) as! BookAuthors
             
             mySelectedBook.bookID = bookID
-            mySelectedBook.authorID = authorID
+            mySelectedBook.authorID = authorName
             mySelectedBook.role = role
             mySelectedBook.changed = false
         }
@@ -542,4 +569,253 @@ class coreDatabase: NSObject
         saveContext()
     }
     
+    func deleteBookFromShelf(_ bookID: String, shelfID: String)
+    {
+        let myBook = getBookShelf(bookID: bookID, shelfID: shelfID)
+        
+        for myItem in myBook
+        {
+            persistentContainer.viewContext.delete(myItem as NSManagedObject)
+        }
+        
+        saveContext()
+    }
+    
+    func getBookCategory(category: String)->[BookCategories]
+    {
+        let fetchRequest = NSFetchRequest<BookCategories>(entityName: "BookCategories")
+        
+        let predicate = NSPredicate(format: "category == \"\(category)\"")
+        
+        // Set the predicate on the fetch request
+        fetchRequest.predicate = predicate
+        
+        // Execute the fetch request, and cast the results to an array of  objects
+        do
+        {
+            let fetchResults = try persistentContainer.viewContext.fetch(fetchRequest)
+            return fetchResults
+        }
+        catch
+        {
+            print("Error ocurred during execution: \(error)")
+            return []
+        }
+    }
+    
+    func getBookCategory(bookID: String)->[BookCategories]
+    {
+        let fetchRequest = NSFetchRequest<BookCategories>(entityName: "BookCategories")
+        
+        let predicate = NSPredicate(format: "bookID == \"\(bookID)\"")
+        
+        // Set the predicate on the fetch request
+        fetchRequest.predicate = predicate
+        // Execute the fetch request, and cast the results to an array of  objects
+        do
+        {
+            let fetchResults = try persistentContainer.viewContext.fetch(fetchRequest)
+            return fetchResults
+        }
+        catch
+        {
+            print("Error ocurred during execution: \(error)")
+            return []
+        }
+    }
+    
+    func getBookCategory(bookID: String, category: String)->[BookCategories]
+    {
+        let fetchRequest = NSFetchRequest<BookCategories>(entityName: "BookCategories")
+        
+        let predicate = NSPredicate(format: "(bookID == \"\(bookID)\") && (category == \"\(category)\")")
+        
+        // Set the predicate on the fetch request
+        fetchRequest.predicate = predicate
+        // Execute the fetch request, and cast the results to an array of  objects
+        do
+        {
+            let fetchResults = try persistentContainer.viewContext.fetch(fetchRequest)
+            return fetchResults
+        }
+        catch
+        {
+            print("Error ocurred during execution: \(error)")
+            return []
+        }
+    }
+    
+    func saveBookCategory(_ bookID: String, category: String)
+    {
+        let myBook = getBookCategory(bookID: bookID)
+        
+        var mySelectedBook: BookCategories
+        if myBook.count == 0
+        {
+            mySelectedBook = NSEntityDescription.insertNewObject(forEntityName: "BookCategories", into: persistentContainer.viewContext) as! BookCategories
+            
+            mySelectedBook.bookID = bookID
+            mySelectedBook.category = category
+            mySelectedBook.changed = false
+        }
+        else
+        {
+            mySelectedBook = myBook[0]
+            mySelectedBook.category = category
+        }
+        
+        saveContext()
+    }
+    
+    func deleteBookFromCategory(_ bookID: String, category: String)
+    {
+        let myBook = getBookCategory(bookID: bookID, category: category)
+        
+        for myItem in myBook
+        {
+            persistentContainer.viewContext.delete(myItem as NSManagedObject)
+        }
+        
+        saveContext()
+    }
+
+    
+    func getBookCategoryList()->[String]
+    {
+        var myWorkingArray: [String] = Array()
+        
+        let fetchRequest = NSFetchRequest<BookCategories>(entityName: "BookCategories")
+        
+        fetchRequest.propertiesToFetch = ["category"]
+        fetchRequest.returnsDistinctResults = true
+        
+        // Execute the fetch request, and cast the results to an array of  objects
+        do
+        {
+            let fetchResults = try persistentContainer.viewContext.fetch(fetchRequest)
+            for myItem in fetchResults
+            {
+                myWorkingArray.append(myItem.category!)
+            }
+            return myWorkingArray
+        }
+        catch
+        {
+            print("Error ocurred during execution: \(error)")
+            return []
+        }
+    }
+
+    func getImage(bookID: String)->UIImage?
+    {
+        let fetchRequest = NSFetchRequest<BookImage>(entityName: "BookImage")
+        
+        let predicate = NSPredicate(format: "bookID == \"\(bookID)\"")
+        
+        // Set the predicate on the fetch request
+        fetchRequest.predicate = predicate
+        // Execute the fetch request, and cast the results to an array of  objects
+        do
+        {
+            let fetchResults = try persistentContainer.viewContext.fetch(fetchRequest)
+            
+            if fetchResults.count == 0
+            {
+                return nil
+            }
+            else
+            {
+                return UIImage(data: fetchResults[0].bookImage as! Data)
+            }
+            
+        }
+        catch
+        {
+            print("Error ocurred during execution: \(error)")
+            return nil
+        }
+    }
+    
+    private func getImageRecord(bookID: String)->[BookImage]
+    {
+        let fetchRequest = NSFetchRequest<BookImage>(entityName: "BookImage")
+        
+        let predicate = NSPredicate(format: "bookID == \"\(bookID)\"")
+        
+        // Set the predicate on the fetch request
+        fetchRequest.predicate = predicate
+        // Execute the fetch request, and cast the results to an array of  objects
+        do
+        {
+            let fetchResults = try persistentContainer.viewContext.fetch(fetchRequest)
+            return fetchResults
+        }
+        catch
+        {
+            print("Error ocurred during execution: \(error)")
+            return []
+        }
+    }
+    
+    func saveImage(_ bookID: String, image: UIImage)
+    {
+        let myImageRecords = getImageRecord(bookID: bookID)
+        
+        
+        // create NSData from UIImage
+        guard let imageData = UIImageJPEGRepresentation(image, 1) else {
+            // handle failed conversion
+            print("jpg error")
+            return
+        }
+        
+        var mySelectedImage: BookImage
+        if myImageRecords.count == 0
+        {
+            mySelectedImage = NSEntityDescription.insertNewObject(forEntityName: "BookImage", into: persistentContainer.viewContext) as! BookImage
+            mySelectedImage.bookID = bookID
+        }
+        else
+        {
+            mySelectedImage = myImageRecords[0]
+        }
+        
+        mySelectedImage.bookImage = imageData as NSData
+        mySelectedImage.usedDate = NSDate()
+        
+        saveContext()
+    }
+    
+    func deleteOldImage()
+    {
+        let fetchRequest = NSFetchRequest<BookImage>(entityName: "BookImage")
+        
+        // get the date one month before today
+        let myCalendar = Calendar.current
+        
+        let resultDate = myCalendar.date(byAdding: .month, value: -1, to: Date())!
+        
+        let predicate = NSPredicate(format: "usedDate <= %@", resultDate as CVarArg)
+        
+        // Set the predicate on the fetch request
+        
+        fetchRequest.predicate = predicate
+        
+        do
+        {
+            let fetchResults = try persistentContainer.viewContext.fetch(fetchRequest)
+        
+            for myItem in fetchResults
+            {
+                persistentContainer.viewContext.delete(myItem as NSManagedObject)
+            }
+        }
+        catch
+        {
+            print("Error ocurred during execution: \(error)")
+        }
+        
+        saveContext()
+    }
+
 }

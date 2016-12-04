@@ -8,10 +8,49 @@
 
 import Foundation
 
+class ShelvesList: NSObject
+{
+    private var myShelves: [Shelf] = Array()
+
+    var shelves: [Shelf]
+    {
+        get
+        {
+            return myShelves
+        }
+    }
+    
+    override init()
+    {
+        let myShelvesData = myDatabaseConnection.getShelves()
+        
+        myShelves.removeAll()
+        
+        for myIem in myShelvesData
+        {
+            let tempItem = Shelf(shelfID: myIem.shelfID!, shelfName: myIem.shelfName!, shelfLink: myIem.shelfLink!)
+            myShelves.append(tempItem)
+        }
+    
+        myShelves.sort
+        {
+            if $0.shelfName != $1.shelfName
+            {
+                return $0.shelfName < $1.shelfName
+            }
+            else
+            {
+                return $0.shelfName < $1.shelfName
+            }
+        }
+    }
+}
+
 class Shelf: NSObject
 {
     private var myShelfID: String = ""
     private var myShelfName: String = ""
+    private var myShelfLink: String = ""
     
     var shelfID: String
     {
@@ -37,6 +76,18 @@ class Shelf: NSObject
         }
     }
 
+    var shelfLink: String
+        {
+        get
+        {
+            return myShelfLink
+        }
+        set
+        {
+            myShelfLink = newValue
+        }
+    }
+    
     init(shelfID: String, shelfName: String)
     {
         super.init()
@@ -45,6 +96,15 @@ class Shelf: NSObject
         myShelfName = shelfName
         
         save()
+    }
+    
+    init(shelfID: String, shelfName: String, shelfLink: String)
+    {
+        super.init()
+        
+        myShelfID = shelfID
+        myShelfName = shelfName
+        myShelfLink = shelfLink
     }
     
     init(shelfID: String)
@@ -63,6 +123,7 @@ class Shelf: NSObject
             for myShelf in myStoredShelves
             {
                 myShelfName = myShelf.shelfName!
+                myShelfLink = myShelf.shelfLink!
             }
         }
     }
@@ -83,12 +144,23 @@ class Shelf: NSObject
             for myShelf in myStoredShelves
             {
                 myShelfID = myShelf.shelfID!
+                myShelfLink = myShelf.shelfLink!
             }
+        }
+        else
+        {
+            // New shelf
+            
+            myShelfName = shelfName
+            
+            shelfID = "\(myDatabaseConnection.getMinShelfID() - 1)"
+            
+            save()
         }
     }
     
     func save()
     {
-        myDatabaseConnection.saveShelf(myShelfID, shelfName: myShelfName)
+        myDatabaseConnection.saveShelf(myShelfID, shelfName: myShelfName, shelfLink: myShelfLink)
     }
 }

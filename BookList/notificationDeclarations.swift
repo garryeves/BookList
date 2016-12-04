@@ -19,3 +19,12 @@ let goodReadsBookDetailsLoadFinished = Notification.Name("goodReadsBookDetailsLo
 let reloadTableValues = Notification.Name("reloadTableValues")
 
 let sectionStateChanged = Notification.Name("sectionStateChanged")
+
+let googleBooksAuthorLoadFinished = Notification.Name("googleBooksAuthorLoadFinished")
+let changeBookShelfFinished = Notification.Name("changeBookShelfFinished")
+let changeMainBookShelfFinished = Notification.Name("changeMainBookShelfFinished")
+
+
+// Appdelegate
+
+let ToggleAuthUINotification = Notification.Name("ToggleAuthUINotification")

@@ -8,34 +8,45 @@
 
 import UIKit
 
-class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDelegate
+class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, MyPickerDelegate
 {
     @IBOutlet weak var tableBooks: UITableView!
     
-    var goodReads: GoodReadsData!
+    var googleData: GoogleBooks!
     
-    private var headerCell: myBookHeader!
+//    private var headerCell: myBookHeader!
+    private var myShelvesArray: [Shelf]!
+    private var row: Int = 0
+    private var selectedBookEntry: Book!
+    private var shelfList: ShelvesList!
     
     override func viewDidLoad()
     {
         super.viewDidLoad()
 
-        notificationCenter.addObserver(self, selector: #selector(self.goodReadsBooksLoaded), name: goodReadsBookLoadFinished, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(self.googleDataBooksLoaded), name: goodReadsBookLoadFinished, object: nil)
         notificationCenter.addObserver(self, selector: #selector(self.reloadTable), name: reloadTableValues, object: nil)
         notificationCenter.addObserver(self, selector: #selector(self.updateState(_:)), name: sectionStateChanged, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(self.changeBookShelf(_:)), name: changeMainBookShelfFinished, object: nil)
 
-        headerCell = tableBooks.dequeueReusableCell(withIdentifier: "headerCell") as! myBookHeader
-        headerCell.goodReads = goodReads
+ //       headerCell = tableBooks.dequeueReusableCell(withIdentifier: "headerCell") as! myBookHeader
+ //       headerCell.googleData = googleData
         
-        tableBooks.tableHeaderView = headerCell
+ //       tableBooks.tableHeaderView = headerCell
         
-        goodReadsBooksLoaded()
+        // LoadShelf details into array
         
-        if goodReads.isAuthenticated
+        myShelvesArray = Array()
+        
+        loadShelves()
+        
+        googleDataBooksLoaded()
+        
+        if GIDSignIn.sharedInstance().hasAuthInKeychain()
         {
-            // Go and get the list of shelves from Goodreads, and then make sure we have populated them into the data table
+            // Go and get the list of shelves from googleData, and then make sure we have populated them into the data table
             
-            goodReads.getAllShelfBooks(page:1)
+            googleData.getBooks()
         }
         else
         {
@@ -44,6 +55,8 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
         
         let nib = UINib(nibName: "bookListSectionHeader", bundle: nil)
         tableBooks.register(nib, forHeaderFooterViewReuseIdentifier: "bookListSectionHeader")
+        
+        shelfList = ShelvesList()
     }
     
     override func didReceiveMemoryWarning()
@@ -60,22 +73,38 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
             
             let workingSender = sender as! IndexPath
             
-            bookDetailView.goodReads = goodReads
+            bookDetailView.googleData = googleData
             bookDetailView.section = workingSender.section
             bookDetailView.row = workingSender.row
+        }
+        else if segue.identifier == "stringPickerSegue"
+        {
+            let stringPicker = segue.destination as! StringPickerViewController
+            
+            // Display the picker with the list of available shelves
+            
+            var displayArray: [String] = Array()
+            
+            for myItem in shelfList.shelves
+            {
+                displayArray.append(myItem.shelfName)
+            }
+            
+            stringPicker.displayArray = displayArray
+            stringPicker.delegate = self
         }
     }
         
     func numberOfSections(in tableView: UITableView) -> Int
     {
-        return goodReads.books.count
+        return googleData.books.count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
     {
-        if goodReads.books[section].state == showStatus
+        if googleData.books[section].state == showStatus
         {
-            return goodReads.books[section].books.count
+            return googleData.books[section].books.count
         }
         else
         {
@@ -87,13 +116,13 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
     {
         let cell = tableView.dequeueReusableCell(withIdentifier: "bookCell")! as! myBookItem
         
-//        cell.lblTitle.text = "\(goodReads.books[(indexPath as NSIndexPath).row].bookName) - \(goodReads.books[(indexPath as NSIndexPath).row].publishedDate)"
+//        cell.lblTitle.text = "\(googleData.books[(indexPath as NSIndexPath).row].bookName) - \(googleData.books[(indexPath as NSIndexPath).row].publishedDate)"
         
-        cell.lblTitle.text = goodReads.books[indexPath.section].books[indexPath.row].bookName
+        cell.lblTitle.text = googleData.books[indexPath.section].books[indexPath.row].bookName
         
         var authorName = ""
 
-        for myItem in goodReads.books[indexPath.section].books[indexPath.row].authors
+        for myItem in googleData.books[indexPath.section].books[indexPath.row].authors
         {
             if authorName != ""
             {
@@ -104,21 +133,42 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
         }
         
         cell.lblAuthor.text = authorName
-
-        var shelfName = ""
         
-        for myItem in goodReads.books[indexPath.section].books[indexPath.row].shelves
+        cell.btnShelf.setTitle(googleData.books[indexPath.section].books[indexPath.row].shelves[0].shelfName, for: .normal)
+
+        if googleData.books[indexPath.section].books[indexPath.row].imageUrl == ""
         {
-            if shelfName != ""
-            {
-                shelfName = shelfName + ", "
-            }
-            
-            shelfName = shelfName + myItem.shelfName
+            cell.imgView.isHidden = true
         }
+        else
+        {
+            cell.imgView.isHidden = false
+
+            // check to see if we already have an image for the book
             
+            let myImage = myDatabaseConnection.getImage(bookID: googleData.books[indexPath.section].books[indexPath.row].bookID)
             
-        cell.lblShelf.text = shelfName
+            if myImage == nil
+            {
+                let url = URL(string: googleData.books[indexPath.section].books[indexPath.row].imageUrl)
+                let data = try? Data(contentsOf: url!) //make sure your image in this url does exist, otherwise unwrap in a if let check / try-catch
+                
+                let workingImage = UIImage(data: data!)
+                
+                myDatabaseConnection.saveImage(googleData.books[indexPath.section].books[indexPath.row].bookID, image: workingImage!)
+                cell.imgView.image = workingImage
+            }
+            else
+            {
+                cell.imgView.image = myImage
+            }
+
+//            let url = URL(string: googleData.books[indexPath.section].books[indexPath.row].imageUrl)
+//            let data = try? Data(contentsOf: url!) //make sure your image in this url does exist, otherwise unwrap in a if let check / try-catch
+//            cell.imgView.image = UIImage(data: data!)
+        }
+        
+        cell.bookRecord = googleData.books[indexPath.section].books[indexPath.row]
         
         return cell
     }
@@ -148,7 +198,7 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
         header.lblDescription.font = UIFont.boldSystemFont(ofSize: 16.0)
         header.btnDisclosure.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16.0)
         
-        if goodReads.books[section].state == showStatus
+        if googleData.books[section].state == showStatus
         {
             header.btnDisclosure.setTitle("-", for: .normal)
         }
@@ -158,9 +208,9 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
         }
         
         header.section = section
-        header.currentState = goodReads.books[section].state
+        header.currentState = googleData.books[section].state
         
-        header.lblDescription.text = "\(goodReads.books[section].itemName) - \(goodReads.books[section].books.count) books"
+        header.lblDescription.text = "\(googleData.books[section].itemName) - \(googleData.books[section].books.count) books"
         
         return header
     }
@@ -171,30 +221,32 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
         return 40.0
     }
  
-    func goodReadsBooksLoaded()
+    func googleDataBooksLoaded()
     {
         notificationCenter.removeObserver(goodReadsBookLoadFinished)
+        
+        loadShelves()
         
         reloadTable()
     }
     
     func reloadTable()
     {
-        goodReads.sort()
+        googleData.sort()
         
-        switch goodReads.sortOrder
-        {
-            case sortOrderShelf :
-                headerCell.btnShelf.isEnabled = false
-                headerCell.btnAuthor.isEnabled = true
-            
-            case sortOrderAuthor :
-                headerCell.btnAuthor.isEnabled = false
-                headerCell.btnShelf.isEnabled = true
-            
-            default:
-                print("ipadTableView: Set sort buttons - hit default for some reason - \(goodReads.sortOrder)")
-        }
+//            switch googleData.sortOrder
+//            {
+//                case sortOrderShelf :
+//                    headerCell.btnShelf.isEnabled = false
+//                    headerCell.btnAuthor.isEnabled = true
+//                
+//                case sortOrderAuthor :
+//                    headerCell.btnAuthor.isEnabled = false
+//                    headerCell.btnShelf.isEnabled = true
+//                
+//                default:
+//                    print("ipadTableView: Set sort buttons - hit default for some reason - \(googleData.sortOrder)")
+//            }
     
         tableBooks.reloadData()
     }
@@ -204,9 +256,39 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
         let section = (notification as NSNotification).userInfo!["section"] as! Int
         let state = (notification as NSNotification).userInfo!["state"] as! String
 
-        goodReads.books[section].state = state
+        googleData.books[section].state = state
         
         reloadTable()
+    }
+    
+    func loadShelves()
+    {
+        myShelvesArray.removeAll()
+        
+        for myShelf in myDatabaseConnection.getShelves()
+        {
+            let tempItem = Shelf(shelfID: myShelf.shelfID!)
+            
+            myShelvesArray.append(tempItem)
+        }
+    }
+    
+    func myPickerDidFinish(_ index: Int)
+    {
+        // Go and get the book details from the database
+        
+        selectedBookEntry.moveBetweenShelves(fromShelfID: selectedBookEntry.shelves[0].shelfID, toShelfID: shelfList.shelves[index].shelfID, googleData: googleData)
+        
+        googleData.sort()
+        
+        tableBooks.reloadData()
+    }
+
+    func changeBookShelf(_ notification: Notification)
+    {
+        selectedBookEntry = (notification as NSNotification).userInfo!["book"] as! Book
+        
+        performSegue(withIdentifier: "stringPickerSegue", sender: row)
     }
 }
 
@@ -214,12 +296,21 @@ class myBookItem: UITableViewCell
 {
     @IBOutlet weak var lblAuthor: UILabel!
     @IBOutlet weak var lblTitle: UILabel!
-    @IBOutlet weak var lblShelf: UILabel!
+    @IBOutlet weak var imgView: UIImageView!
+    @IBOutlet weak var btnShelf: UIButton!
+    
+    var bookRecord: Book!
     
     override func layoutSubviews()
     {
         contentView.frame = bounds
         super.layoutSubviews()
+    }
+    
+    @IBAction func btnShelf(_ sender: UIButton)
+    {
+        let selectedDictionary = ["book" : bookRecord!]
+        notificationCenter.post(name: changeMainBookShelfFinished, object: nil, userInfo:selectedDictionary)
     }
 }
 
@@ -229,7 +320,7 @@ class myBookHeader: UITableViewCell
     @IBOutlet weak var btnShelf: UIButton!
     @IBOutlet weak var txtTitle: UILabel!
 
-    var goodReads: GoodReadsData!
+    var googleData: GoogleBooks!
     
     override func layoutSubviews()
     {
@@ -239,13 +330,13 @@ class myBookHeader: UITableViewCell
     
     @IBAction func btnAuthor(_ sender: UIButton)
     {
-        goodReads.sortOrder = sortOrderAuthor
+        googleData.sortOrder = sortOrderAuthor
         notificationCenter.post(name: reloadTableValues, object: nil)
     }
     
     @IBAction func btnShelf(_ sender: UIButton)
     {
-        goodReads.sortOrder = sortOrderShelf
+        googleData.sortOrder = sortOrderShelf
         notificationCenter.post(name: reloadTableValues, object: nil)
     }
 }

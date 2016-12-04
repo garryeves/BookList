@@ -1,0 +1,44 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "74E84EF032D8E66A66DB4260F5A0A7F3EABAEDF2",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "EB2210CFD48672E403BED699D5D7F01B844069CF" : 9223372036854775807,
+    "DBB3EF050B5AE2C5AD59707919EAD7E15F408B52" : 9223372036854775807,
+    "A65BCAA9B7A77500BBF95593800C3F1B9D215F5E" : 9223372036854775807,
+    "74E84EF032D8E66A66DB4260F5A0A7F3EABAEDF2" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "D01690E6-5DC8-4995-9E3F-F129635EAE94",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "EB2210CFD48672E403BED699D5D7F01B844069CF" : "..\/SWXMLHash\/SWXMLHash",
+    "DBB3EF050B5AE2C5AD59707919EAD7E15F408B52" : "..",
+    "A65BCAA9B7A77500BBF95593800C3F1B9D215F5E" : "..\/OAuthSwift\/OAuthSwift",
+    "74E84EF032D8E66A66DB4260F5A0A7F3EABAEDF2" : "BookList\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "BookList",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "BookList.xcworkspace",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/garryeves\/BookList.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "74E84EF032D8E66A66DB4260F5A0A7F3EABAEDF2"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/OAuthSwift\/OAuthSwift.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "A65BCAA9B7A77500BBF95593800C3F1B9D215F5E"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/garryeves\/GroupFitness.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "DBB3EF050B5AE2C5AD59707919EAD7E15F408B52"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/drmohundro\/SWXMLHash.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "EB2210CFD48672E403BED699D5D7F01B844069CF"
+    }
+  ]
+}

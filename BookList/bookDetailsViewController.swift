@@ -8,7 +8,7 @@
 
 import UIKit
 
-class bookDetailsViewController: UIViewController, UITableViewDataSource
+class bookDetailsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, MyPickerDelegate
 {
     @IBOutlet weak var txtTitle: UITextField!
     @IBOutlet weak var txtPublisher: UITextField!
@@ -16,35 +16,31 @@ class bookDetailsViewController: UIViewController, UITableViewDataSource
     @IBOutlet weak var tblAuthors: UITableView!
     @IBOutlet weak var btnShelf: UIButton!
     @IBOutlet weak var txtPages: UITextField!
-    @IBOutlet weak var btnFormat: UIButton!
     @IBOutlet weak var txtISBN: UITextField!
     @IBOutlet weak var txtISBN13: UITextField!
     @IBOutlet weak var txtAverageRating: UITextField!
     @IBOutlet weak var txtRatingCount: UITextField!
-    @IBOutlet weak var btnStartReading: UIButton!
-    @IBOutlet weak var btnFinishedReading: UIButton!
-    @IBOutlet weak var txtEdition: UITextField!
     @IBOutlet weak var btnPublishDate: UIButton!
     @IBOutlet weak var btnSave: UIBarButtonItem!
     @IBOutlet weak var webDescription: UIWebView!
     @IBOutlet weak var txtLink: UITextView!
     @IBOutlet weak var imgBook: UIImageView!
+    @IBOutlet weak var btnGetBooksForAuthor: UIButton!
     
-    var goodReads: GoodReadsData!
+    var googleData: GoogleBooks!
     var section: Int!
     var row: Int!
     
     private var workingAuthors: [Author] = Array()
+    private var shelfList: ShelvesList!
     
     override func viewDidLoad()
     {
         super.viewDidLoad()
 
-        tblAuthors.register(UITableViewCell.self, forCellReuseIdentifier: "authorCell")
+    //    tblAuthors.register(UITableViewCell.self, forCellReuseIdentifier: "authorCell")
         
         notificationCenter.addObserver(self, selector: #selector(self.populateScreen), name: goodReadsBookDetailsLoadFinished, object: nil)
-
-        goodReads.getBookDetails(myBook: goodReads.books[section].books[row])
         
         tblAuthors.layer.borderColor = UIColor.lightGray.cgColor
         tblAuthors.layer.borderWidth = 0.5
@@ -54,6 +50,10 @@ class bookDetailsViewController: UIViewController, UITableViewDataSource
         txtLink.layer.borderWidth = 0.5
         txtLink.layer.cornerRadius = 5.0
 
+        btnGetBooksForAuthor.isHidden = true
+        
+        shelfList = ShelvesList()
+        
         populateScreen()
     }
     
@@ -68,6 +68,35 @@ class bookDetailsViewController: UIViewController, UITableViewDataSource
         // Dispose of any resources that can be recreated.
     }
     
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?)
+    {
+        if segue.identifier == "getBooksForAuthorSegue"
+        {
+            let bookAuthorListView = segue.destination as! booksForAuthorViewController
+            
+            let workingSender = sender as! IndexPath
+            
+            bookAuthorListView.googleData = googleData
+            bookAuthorListView.authorName = workingAuthors[workingSender.row].authorName
+        }
+        else if segue.identifier == "stringPickerSegue"
+        {
+            let stringPicker = segue.destination as! StringPickerViewController
+            
+            // Display the picker with the list of available shelves
+            
+            var displayArray: [String] = Array()
+            
+            for myItem in shelfList.shelves
+            {
+                displayArray.append(myItem.shelfName)
+            }
+            
+            stringPicker.displayArray = displayArray
+            stringPicker.delegate = self
+        }
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
     {
         return workingAuthors.count
@@ -75,9 +104,9 @@ class bookDetailsViewController: UIViewController, UITableViewDataSource
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
     {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "authorCell")!
+        let cell = tableView.dequeueReusableCell(withIdentifier: "authorCell") as! authorItem
         
-        cell.textLabel?.text = workingAuthors[indexPath.row].authorName
+        cell.lblAuthor.text = workingAuthors[indexPath.row].authorName
         
         return cell
     }
@@ -94,6 +123,11 @@ class bookDetailsViewController: UIViewController, UITableViewDataSource
         }
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
+    {
+        performSegue(withIdentifier: "getBooksForAuthorSegue", sender: indexPath)
+    }
+    
     @IBAction func btnSave(_ sender: UIBarButtonItem)
     {
         dismiss(animated: true, completion: nil)
@@ -102,9 +136,6 @@ class bookDetailsViewController: UIViewController, UITableViewDataSource
     @IBAction func btnBack(_ sender: UIBarButtonItem)
     {
         dismiss(animated: true, completion: nil)
-    }
-    
-    @IBAction func btnShelf(_ sender: UIButton) {
     }
     
     @IBAction func btnFormat(_ sender: UIButton) {
@@ -121,9 +152,9 @@ class bookDetailsViewController: UIViewController, UITableViewDataSource
     
     func populateScreen()
     {
-        let workingBook = goodReads.books[section].books[row]
+        let workingBook = googleData.books[section].books[row]
         
-        workingAuthors = goodReads.books[section].books[row].authors
+        workingAuthors = workingBook.authors
 
         txtTitle.text = workingBook.bookName
         txtPublisher.text = workingBook.publisherID
@@ -155,14 +186,14 @@ class bookDetailsViewController: UIViewController, UITableViewDataSource
         
         txtPages.text = workingBook.numPages
         
-        if workingBook.format == ""
-        {
-            btnFormat.setTitle("Select Format", for: .normal)
-        }
-        else
-        {
-            btnFormat.setTitle(workingBook.format, for: .normal)
-        }
+//        if workingBook.format == ""
+//        {
+//            btnFormat.setTitle("Select Format", for: .normal)
+//        }
+//        else
+//        {
+//            btnFormat.setTitle(workingBook.format, for: .normal)
+//        }
 
         txtISBN.text = workingBook.isbn
         txtISBN13.text = workingBook.isbn13
@@ -175,9 +206,29 @@ class bookDetailsViewController: UIViewController, UITableViewDataSource
         {
             imgBook.isHidden = false
             
-            let url = URL(string: workingBook.imageUrl)
-            let data = try? Data(contentsOf: url!) //make sure your image in this url does exist, otherwise unwrap in a if let check / try-catch
-            imgBook.image = UIImage(data: data!)
+            // check to see if we already have an image for the book
+            
+            let myImage = myDatabaseConnection.getImage(bookID: workingBook.bookID)
+            
+            if myImage == nil
+            {
+                let url = URL(string: workingBook.imageUrl)
+                let data = try? Data(contentsOf: url!) //make sure your image in this url does exist, otherwise unwrap in a if let check / try-catch
+                
+                let workingImage = UIImage(data: data!)
+                
+                myDatabaseConnection.saveImage(workingBook.bookID, image: workingImage!)
+                imgBook.image = workingImage
+            }
+            else
+            {
+                imgBook.image = myImage
+            }
+
+ //print("Image = \(workingBook.imageUrl)")
+//            let url = URL(string: workingBook.imageUrl)
+//            let data = try? Data(contentsOf: url!) //make sure your image in this url does exist, otherwise unwrap in a if let check / try-catch
+//            imgBook.image = UIImage(data: data!)
         }
         
         txtLink.text = workingBook.link
@@ -185,35 +236,59 @@ class bookDetailsViewController: UIViewController, UITableViewDataSource
         txtRatingCount.text = workingBook.ratingsCount
         webDescription.loadHTMLString(workingBook.bookDescription, baseURL: nil)
 
-        if workingBook.startDateString == ""
-        {
-            btnStartReading.setTitle("Start Reading", for: .normal)
-        }
-        else
-        {
-            btnStartReading.setTitle(workingBook.startDateString, for: .normal)
-        }
-
-        if workingBook.endDateString == ""
-        {
-            btnFinishedReading.setTitle("Finished Reading", for: .normal)
-        }
-        else
-        {
-            btnFinishedReading.setTitle(workingBook.endDateString, for: .normal)
-        }
+//        if workingBook.startDateString == ""
+//        {
+//            btnStartReading.setTitle("Start Reading", for: .normal)
+//        }
+//        else
+//        {
+//            btnStartReading.setTitle(workingBook.startDateString, for: .normal)
+//        }
+//
+//        if workingBook.endDateString == ""
+//        {
+//            btnFinishedReading.setTitle("Finished Reading", for: .normal)
+//        }
+//        else
+//        {
+//            btnFinishedReading.setTitle(workingBook.endDateString, for: .normal)
+//        }
         
-        txtEdition.text = workingBook.editionInformation
+//        txtEdition.text = workingBook.editionInformation
         
-        if workingBook.publishedDateString == ""
+        if workingBook.published == ""
         {
             btnPublishDate.setTitle("Set Date", for: .normal)
         }
         else
         {
-            btnPublishDate.setTitle(workingBook.publishedDateString, for: .normal)
+            btnPublishDate.setTitle(workingBook.published, for: .normal)
         }
 
         tblAuthors.reloadData()
+    }
+    
+    func myPickerDidFinish(_ index: Int)
+    {
+        // Go and get the book details from the database
+        
+        let workingBook = googleData.books[section].books[row]
+        
+        workingBook.moveBetweenShelves(fromShelfID: workingBook.shelves[0].shelfID, toShelfID: shelfList.shelves[index].shelfID, googleData: googleData)
+        
+        btnShelf.setTitle(shelfList.shelves[index].shelfName, for: .normal)
+        
+        googleData.sort()
+    }
+}
+
+class authorItem: UITableViewCell
+{
+    @IBOutlet weak var lblAuthor: UILabel!
+    
+    override func layoutSubviews()
+    {
+        contentView.frame = bounds
+        super.layoutSubviews()
     }
 }

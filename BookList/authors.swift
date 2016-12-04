@@ -115,30 +115,30 @@ class Author: NSObject
         }
     }
 
-    init(authorID: String)
-    {
-        super.init()
-        // Load Author based on ID from the database
-        
-        let myStoredAuthors = myDatabaseConnection.getAuthor(authorID: authorID)
-        
-        if myStoredAuthors.count > 0
-        {
-            // Existing shelf
-            
-            myAuthorID = authorID
-            
-            for myAuthor in myStoredAuthors
-            {
-                myAuthorName = myAuthor.authorName!
-                myImageUrl = myAuthor.imageURL!
-                mySmallImageUrl = myAuthor.smallImageURL!
-                myLink = myAuthor.link!
-                myAverageRating = myAuthor.averageRating!
-                myRatingsCount = myAuthor.ratingsCount!
-            }
-        }
-    }
+//    init(authorID: String)
+//    {
+//        super.init()
+//        // Load Author based on ID from the database
+//        
+//        let myStoredAuthors = myDatabaseConnection.getAuthor(authorID: authorID)
+//        
+//        if myStoredAuthors.count > 0
+//        {
+//            // Existing shelf
+//            
+//            myAuthorID = authorID
+//            
+//            for myAuthor in myStoredAuthors
+//            {
+//                myAuthorName = myAuthor.authorName!
+//                myImageUrl = myAuthor.imageURL!
+//                mySmallImageUrl = myAuthor.smallImageURL!
+//                myLink = myAuthor.link!
+//                myAverageRating = myAuthor.averageRating!
+//                myRatingsCount = myAuthor.ratingsCount!
+//            }
+//        }
+//    }
     
     init(authorName: String)
     {
@@ -163,24 +163,30 @@ class Author: NSObject
                 myRatingsCount = myAuthor.ratingsCount!
             }
         }
+        else
+        {
+            myAuthorName = authorName
+            
+            save()
+        }
     }
     
-    init(authorID: String, authorName: String, imageURL: String, smallImageURL: String, link: String, averageRating: String, ratingsCount: String)
-    {
-        super.init()
-        
-        // First check to see if there is an existing entry
-        
-        myAuthorID = authorID
-        myAuthorName = authorName
-        myImageUrl = imageURL
-        mySmallImageUrl = smallImageURL
-        myLink = link
-        myAverageRating = averageRating
-        myRatingsCount = ratingsCount
-        
-        save()
-    }
+//    init(authorID: String, authorName: String, imageURL: String, smallImageURL: String, link: String, averageRating: String, ratingsCount: String)
+//    {
+//        super.init()
+//        
+//        // First check to see if there is an existing entry
+//        
+//        myAuthorID = authorID
+//        myAuthorName = authorName
+//        myImageUrl = imageURL
+//        mySmallImageUrl = smallImageURL
+//        myLink = link
+//        myAverageRating = averageRating
+//        myRatingsCount = ratingsCount
+//        
+//        save()
+//    }
 
     func save()
     {

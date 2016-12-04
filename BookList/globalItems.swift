@@ -21,3 +21,5 @@ let sortOrderAuthor = "sortByAuthor"
 
 let showStatus = "Show"
 let hideStatus = "Hide"
+
+var googleUserDetails: GoogleUser!

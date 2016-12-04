@@ -74,6 +74,7 @@ class Book: NSObject
     private var myEndDate: String = ""
     private var myAuthors: [Author] = Array()
     private var myShelves: [Shelf] = Array()
+    private var myCategories: [String] = Array()
     var shelfString: String = ""
     var authorString: String = ""
     
@@ -101,41 +102,41 @@ class Book: NSObject
         }
     }
 
-    var publicationDay: String
-    {
-        get
-        {
-            return myPublicationDay
-        }
-        set
-        {
-            myPublicationDay = newValue
-        }
-    }
-
-    var publicationYear: String
-    {
-        get
-        {
-            return myPublicationYear
-        }
-        set
-        {
-            myPublicationYear = newValue
-        }
-    }
-
-    var publicationMonth: String
-    {
-        get
-        {
-            return myPublicationMonth
-        }
-        set
-        {
-            myPublicationMonth = newValue
-        }
-    }
+//    var publicationDay: String
+//    {
+//        get
+//        {
+//            return myPublicationDay
+//        }
+//        set
+//        {
+//            myPublicationDay = newValue
+//        }
+//    }
+//
+//    var publicationYear: String
+//    {
+//        get
+//        {
+//            return myPublicationYear
+//        }
+//        set
+//        {
+//            myPublicationYear = newValue
+//        }
+//    }
+//
+//    var publicationMonth: String
+//    {
+//        get
+//        {
+//            return myPublicationMonth
+//        }
+//        set
+//        {
+//            myPublicationMonth = newValue
+//        }
+//    }
 
     var published: String
     {
@@ -153,78 +154,100 @@ class Book: NSObject
     {
         get
         {
-            var publicationDay = myPublicationDay
-            var publicationMonth = myPublicationMonth
-            var publicationYear = myPublicationYear
+//            var publicationDay = myPublicationDay
+//            var publicationMonth = myPublicationMonth
+//            var publicationYear = myPublicationYear
+//            
+//            if publicationDay == ""
+//            {
+//                publicationDay = "01"
+//            }
+//            
+//            if publicationMonth == ""
+//            {
+//                publicationMonth = "01"
+//            }
+//            
+//            if publicationYear == ""
+//            {
+//                publicationYear = myPublished
+//                
+//                if publicationYear == ""
+//                {
+//                    publicationYear = "2001"
+//                }
+//            }
+
+            var tempString: String = ""
             
-            if publicationDay == ""
+            switch myPublished.characters.count
             {
-                publicationDay = "01"
-            }
-            
-            if publicationMonth == ""
-            {
-                publicationMonth = "01"
-            }
-            
-            if publicationYear == ""
-            {
-                publicationYear = myPublished
-                
-                if publicationYear == ""
-                {
-                    publicationYear = "2001"
-                }
+                case 4:
+                    // year only
+                    tempString = "\(myPublished)-01-01"
+                    
+                case 7:
+                    // year and month
+                    tempString = "\(myPublished)-01"
+                    
+                case 10:
+                    
+                    // year, month and day
+                    tempString = "\(myPublished)"
+                    
+                default:
+                    tempString = "1901-01-01"
             }
 
-            let myDateFormatter = DateFormatter()
-            myDateFormatter.dateFormat = "dd/MM/yyyyy"
             
-            let workingDateString = "\(publicationDay)/\(publicationMonth)/\(publicationYear)"
-            return myDateFormatter.date(from: workingDateString)!
+            let myDateFormatter = DateFormatter()
+            myDateFormatter.dateFormat = "yyyy-MM-dd"
+            
+          //  let workingDateString = "\(publicationDay)/\(publicationMonth)/\(publicationYear)"
+            return myDateFormatter.date(from: tempString)!
         }
     }
 
-    var publishedDateString: String
-    {
-        get
-        {
-            var publicationDay = myPublicationDay
-            var publicationMonth = myPublicationMonth
-            var publicationYear = myPublicationYear
-            
-            if publicationDay == ""
-            {
-                publicationDay = "01"
-            }
-            
-            if publicationMonth == ""
-            {
-                publicationMonth = "01"
-            }
-            
-            if publicationYear == ""
-            {
-                publicationYear = myPublished
-                
-                if publicationYear == ""
-                {
-                    publicationYear = "2001"
-                }
-            }
-            
-            let myDateFormatter = DateFormatter()
-            myDateFormatter.dateFormat = "dd/MM/yyyyy"
-            
-            let workingDateString = "\(publicationDay)/\(publicationMonth)/\(publicationYear)"
-            let workingDate = myDateFormatter.date(from: workingDateString)!
-
-            myDateFormatter.dateFormat = ""
-            myDateFormatter.dateStyle = .medium
-            
-            return myDateFormatter.string(from: workingDate)
-        }
-    }
+//    var publishedDateString: String
+//    {
+//        get
+//        {
+//            var publicationDay = myPublicationDay
+//            var publicationMonth = myPublicationMonth
+//            var publicationYear = myPublicationYear
+//            
+//            if publicationDay == ""
+//            {
+//                publicationDay = "01"
+//            }
+//            
+//            if publicationMonth == ""
+//            {
+//                publicationMonth = "01"
+//            }
+//            
+//            if publicationYear == ""
+//            {
+//                publicationYear = myPublished
+//                
+//                if publicationYear == ""
+//                {
+//                    publicationYear = "2001"
+//                }
+//            }
+//            
+//            let myDateFormatter = DateFormatter()
+//            myDateFormatter.dateFormat = "dd/MM/yyyyy"
+//            
+//            let workingDateString = "\(publicationDay)/\(publicationMonth)/\(publicationYear)"
+//            let workingDate = myDateFormatter.date(from: workingDateString)!
+//
+//            myDateFormatter.dateFormat = ""
+//            myDateFormatter.dateStyle = .medium
+//            
+//            return myDateFormatter.string(from: workingDate)
+//        }
+//    }
     
     var isbn: String
     {
@@ -370,94 +393,94 @@ class Book: NSObject
         }
     }
     
-    var format: String
-    {
-        get
-        {
-            return myFormat
-        }
-        set
-        {
-            myFormat = newValue
-        }
-    }
-
-    var startDateString: String
-    {
-        get
-        {
-            let myDateFormatter = DateFormatter()
-            myDateFormatter.dateFormat = "EEE MMM dd HH.mm.ss xx yyyy"
-            
-            if myStartDate != ""
-            {
-                let workingDate = myDateFormatter.date(from: myStartDate)!
-                
-                myDateFormatter.dateFormat = ""
-                myDateFormatter.dateStyle = .medium
-                
-                return myDateFormatter.string(from: workingDate)
-            }
-            else
-            {
-                return myStartDate
-            }
-        }
-        set
-        {
-            myStartDate = newValue
-        }
-    }
-
-    var startDate: Date
-    {
-        get
-        {
-            let myDateFormatter = DateFormatter()
-            myDateFormatter.dateFormat = "EEE MMM dd HH.mm.ss xx yyyy"
-            
-            return myDateFormatter.date(from: myStartDate)!
-
-        }
-    }
-    
-    var endDateString: String
-    {
-        get
-        {
-            let myDateFormatter = DateFormatter()
-            myDateFormatter.dateFormat = "EEE MMM dd HH.mm.ss xx yyyy"
-            
-            if myEndDate != ""
-            {
-                let workingDate = myDateFormatter.date(from: myEndDate)!
-                
-                myDateFormatter.dateFormat = ""
-                myDateFormatter.dateStyle = .medium
-                
-                return myDateFormatter.string(from: workingDate)
-            }
-            else
-            {
-                return myEndDate
-            }
-        }
-        set
-        {
-            myEndDate = newValue
-        }
-    }
-    
-    var endDate: Date
-    {
-        get
-        {
-            let myDateFormatter = DateFormatter()
-            myDateFormatter.dateFormat = "EEE MMM dd HH.mm.ss ZZZ yyyy"
-            
-            return myDateFormatter.date(from: myEndDate)!
-        }
-    }
+//    var format: String
+//    {
+//        get
+//        {
+//            return myFormat
+//        }
+//        set
+//        {
+//            myFormat = newValue
+//        }
+//    }
+//
+//    var startDateString: String
+//    {
+//        get
+//        {
+//            let myDateFormatter = DateFormatter()
+//            myDateFormatter.dateFormat = "EEE MMM dd HH.mm.ss xx yyyy"
+//            
+//            if myStartDate != ""
+//            {
+//                let workingDate = myDateFormatter.date(from: myStartDate)!
+//                
+//                myDateFormatter.dateFormat = ""
+//                myDateFormatter.dateStyle = .medium
+//                
+//                return myDateFormatter.string(from: workingDate)
+//            }
+//            else
+//            {
+//                return myStartDate
+//            }
+//        }
+//        set
+//        {
+//            myStartDate = newValue
+//        }
+//    }
+//
+//    var startDate: Date
+//    {
+//        get
+//        {
+//            let myDateFormatter = DateFormatter()
+//            myDateFormatter.dateFormat = "EEE MMM dd HH.mm.ss xx yyyy"
+//            
+//            return myDateFormatter.date(from: myStartDate)!
+//
+//        }
+//    }
+//    
+//    var endDateString: String
+//    {
+//        get
+//        {
+//            let myDateFormatter = DateFormatter()
+//            myDateFormatter.dateFormat = "EEE MMM dd HH.mm.ss xx yyyy"
+//            
+//            if myEndDate != ""
+//            {
+//                let workingDate = myDateFormatter.date(from: myEndDate)!
+//                
+//                myDateFormatter.dateFormat = ""
+//                myDateFormatter.dateStyle = .medium
+//                
+//                return myDateFormatter.string(from: workingDate)
+//            }
+//            else
+//            {
+//                return myEndDate
+//            }
+//        }
+//        set
+//        {
+//            myEndDate = newValue
+//        }
+//    }
+//    
+//    var endDate: Date
+//    {
+//        get
+//        {
+//            let myDateFormatter = DateFormatter()
+//            myDateFormatter.dateFormat = "EEE MMM dd HH.mm.ss ZZZ yyyy"
+//            
+//            return myDateFormatter.date(from: myEndDate)!
+//        }
+//    }
     
     var authors: [Author]
     {
@@ -475,10 +498,19 @@ class Book: NSObject
         }
     }
 
+    var categories: [String]
+    {
+        get
+        {
+            return myCategories
+        }
+    }
+    
     override init()
     {
         myAuthors.removeAll()
         myShelves.removeAll()
+        myCategories.removeAll()
     }
     
     init(bookID: String)
@@ -522,54 +554,7 @@ class Book: NSObject
         
         loadAuthors()
         loadShelves()
-    }
-    
-    init(bookName: String, authorName: String)
-    {
-        super.init()
-        
-   print("Need to do this init - bookName: String, authorName: String")
-   /*
-        // Load Author based on name from the database
-        
-        let myStoredBooks = myDatabaseConnection.getAuthor(authorName: authorName)
-        
-        if myStoredBooks.count > 0
-        {
-            // Existing shelf
-            
-            myBookName = bookName
-            myAuthorName = authorName
-            
-            for myBook in myStoredBooks
-            {
-                myBookID = myBook.bookID!
-                myPublicationDay = myBook.publicationDay!
-                myPublicationYear = myBook.publicationYear!
-                myPublicationMonth = myBook.publicationMonth!
-                myPublished = myBook.published!
-                myIsbn = myBook.iSBN!
-                myIsbn13 = myBook.iSBN13!
-                myImageUrl = myBook.imageURL!
-                mySmallImageUrl = myBook.smallImageURL!
-                myLargeImageUrl = myBook.largeImageURL!
-                myLink = myBook.link!
-                myNumPages = myBook.numPages!
-                myEditionInformation = myBook.editionInformation!
-                myPublisherID = myBook.publisherID!
-                myAverageRating = myBook.averageRating!
-                myRatingsCount = myBook.ratingsCount!
-                myBookDescription = myBook.bookDescription!
-                myFormat = myBook.format!
-                myStartDate = myBook.startDate!
-                myEndDate = myBook.endDate!
-            }
-        }
-        
-        loadAuthors()
-        loadShelves()
- 
- */
+        loadCategories()
     }
     
     init(bookID: String, bookName: String, publicationDay: String, publicationYear: String, publicationMonth: String, published: String, ISBN: String, ISBN13: String, imageUrl: String, smallImageUrl: String, largeImageUrl: String, link: String, numPages: String, editionInformation: String, publisherID: String, averageRating: String, ratingsCount: String, bookDescription: String, format: String, startDate: String, endDate: String)
@@ -601,6 +586,7 @@ class Book: NSObject
         
         loadAuthors()
         loadShelves()
+        loadCategories()
 
         save()
     }
@@ -613,7 +599,7 @@ class Book: NSObject
         
         for myItem in myDatabaseConnection.getBookAuthor(bookID: myBookID)
         {
-            let myAuthor = Author(authorID: myItem.authorID!)
+            let myAuthor = Author(authorName: myItem.authorID!)
             
             myAuthor.role = myItem.role!
             
@@ -624,7 +610,7 @@ class Book: NSObject
                 authorString = authorString + ", "
             }
             
-            let tempAuthor = Author(authorID: myItem.authorID!)
+            let tempAuthor = Author(authorName: myItem.authorID!)
             
             authorString = authorString + tempAuthor.authorName
         }
@@ -654,19 +640,79 @@ class Book: NSObject
         }
     }
     
+    func loadCategories()
+    {
+        myCategories.removeAll()
+
+        for myItem in myDatabaseConnection.getBookCategory(bookID: myBookID)
+        {
+            myCategories.append(myItem.category!)
+        }
+    }
+    
     func addAuthor(authorDetails: Author, role: String)
     {
-        saveAuthor(bookID: myBookID, authorID: authorDetails.authorID, role: role)
+        saveAuthor(authorName: authorDetails.authorName, role: role)
 
         loadAuthors()
     }
     
-    func addShelf(shelfName: String)
+    func removeFromShelf()
+    {
+        for myItem in myDatabaseConnection.getBookShelf(bookID: myBookID)
+        {
+            myDatabaseConnection.deleteBookFromShelf(myBookID, shelfID: myItem.shelfID!)
+        }
+    }
+    
+    func addToShelf(shelfName: String)
     {
         let myShelf = Shelf(shelfName: shelfName)
-        saveShelf(bookID: myBookID, shelfID: myShelf.shelfID)
+        saveShelf(shelfID: myShelf.shelfID)
 
         loadShelves()
+    }
+    
+    func removeCategories()
+    {
+        for myItem in myDatabaseConnection.getBookCategory(bookID: myBookID)
+        {
+            myDatabaseConnection.deleteBookFromCategory(myBookID, category: myItem.category!)
+        }
+    }
+    
+    func addCategory(category: String)
+    {
+        myDatabaseConnection.saveBookCategory(myBookID, category: category)
+        
+        loadCategories()
+    }
+    
+    func addToShelf(shelfID: String, googleData: GoogleBooks)
+    {
+        googleData.googleAssignBookToShelf(bookID: myBookID, shelfID: shelfID)
+        
+        let myShelf = Shelf(shelfID: shelfID)
+        saveShelf(shelfID: myShelf.shelfID)
+        
+        loadShelves()
+    }
+
+    func removeFromShelf(shelfID: String, googleData: GoogleBooks)
+    {
+        // Delete from Google
+        googleData.googleRemoveBookFromShelf(bookID: myBookID, shelfID: shelfID)
+        
+        // Delete from local DB
+        
+        myDatabaseConnection.deleteBookFromShelf(myBookID, shelfID: shelfID)
+    }
+
+    func moveBetweenShelves(fromShelfID: String, toShelfID: String, googleData: GoogleBooks)
+    {
+        removeFromShelf(shelfID: fromShelfID, googleData: googleData)
+        
+        addToShelf(shelfID: toShelfID, googleData: googleData)
     }
     
     func save()
@@ -675,23 +721,22 @@ class Book: NSObject
         
         for myItem in myAuthors
         {
-            saveAuthor(bookID: myBookID, authorID: myItem.authorID, role: myItem.role)
+            saveAuthor(authorName: myItem.authorName, role: myItem.role)
         }
         
         for myItem in myShelves
         {
-            saveShelf(bookID: myBookID, shelfID: myItem.shelfID)
+            saveShelf(shelfID: myItem.shelfID)
         }
     }
     
-    private func saveAuthor(bookID: String, authorID: String, role: String)
+    private func saveAuthor(authorName: String, role: String)
     {
-        myDatabaseConnection.saveBookAuthor(bookID, authorID: authorID, role: role)
+        myDatabaseConnection.saveBookAuthor(myBookID, authorName: authorName, role: role)
     }
     
-    private func saveShelf(bookID: String, shelfID: String)
+    private func saveShelf(shelfID: String)
     {
-        myDatabaseConnection.saveBookShelf(bookID, shelfID: shelfID)
+        myDatabaseConnection.saveBookShelf(myBookID, shelfID: shelfID)
     }
-    
 }
