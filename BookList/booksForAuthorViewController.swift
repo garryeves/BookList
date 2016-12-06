@@ -13,9 +13,12 @@ class booksForAuthorViewController: UIViewController, UITableViewDataSource, UIT
     @IBOutlet weak var tblBooks: UITableView!
     @IBOutlet weak var lblStatus: UILabel!
     @IBOutlet weak var navTitle: UINavigationItem!
-    
+    @IBOutlet weak var txtSearch: UITextField!
+    @IBOutlet weak var btnAuthor: UIButton!
+
     var googleData: GoogleBooks!
     var authorName: String!
+    var delegate: MyMainDelegate!
     
     private var shelfList: ShelvesList!
     private var bookList: [workingBooksForAuthor] = Array()
@@ -32,9 +35,17 @@ class booksForAuthorViewController: UIViewController, UITableViewDataSource, UIT
         lblStatus.isHidden = false
         tblBooks.isHidden = true
         
-        navTitle.title = authorName
-        
-        let _ = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(self.getBookList), userInfo: nil, repeats: false)
+        if authorName == nil
+        {
+            navTitle.title = "Search for book"
+            lblStatus.text = "Please enter search terms"
+        }
+        else
+        {
+            navTitle.title = authorName
+            
+            let _ = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(self.getBookList), userInfo: nil, repeats: false)
+        }
         
         // Populate array of shelves
         
@@ -84,7 +95,15 @@ class booksForAuthorViewController: UIViewController, UITableViewDataSource, UIT
     {
         let cell = tableView.dequeueReusableCell(withIdentifier: "bookEntry") as! bookForAuthorHeader
         
-        cell.lblName.text = bookList[indexPath.row].bookName
+        if bookList[indexPath.row].authorString == ""
+        {
+            cell.lblName.text = "\(bookList[indexPath.row].bookName)"
+        }
+        else
+        {
+            cell.lblName.text = "\(bookList[indexPath.row].bookName) - \(bookList[indexPath.row].authorString)"
+        }
+        
         cell.lblPublished.text = bookList[indexPath.row].published
         
         if bookList[indexPath.row].newShelf == ""
@@ -154,12 +173,33 @@ class booksForAuthorViewController: UIViewController, UITableViewDataSource, UIT
     
     @IBAction func btnBack(_ sender: UIBarButtonItem)
     {
+        if delegate != nil
+        {
+            delegate.reloadTable()
+        }
         dismiss(animated: true, completion: nil)
     }
-    
-    @IBAction func btnSave(_ sender: UIBarButtonItem)
+        
+    @IBAction func btnSearch(_ sender: UIButton)
     {
-        dismiss(animated: true, completion: nil)
+        // Check to see if there is a search term
+        
+        if txtSearch.text == "Search text" || txtSearch.text == ""
+        {
+            let alert = UIAlertController(title: "No search term", message:
+                "Please enter something to search for", preferredStyle: UIAlertControllerStyle.alert)
+            
+            self.present(alert, animated: false, completion: nil)
+            
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default,handler: nil))
+
+        }
+        else
+        {
+            // Go and search
+            lblStatus.text = "Getting list of books from Google Books"
+            googleData.searchBooks(searchTerm: txtSearch.text!, startIndex: 0)
+        }
     }
     
     func myPickerDidFinish(_ index: Int)
@@ -173,7 +213,7 @@ class booksForAuthorViewController: UIViewController, UITableViewDataSource, UIT
         {
             // Create a new book entry
             
-            let myBookEntry = googleData.getBookFromGoogle(bookID: bookList[selectedBook].bookID)
+            let myBookEntry = googleData.getBookFromGoogle(bookID: bookList[selectedBook].bookID, shelfName: shelfList.shelves[index].shelfName)
             
             if myBookEntry != nil
             {

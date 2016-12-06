@@ -75,8 +75,8 @@ class Book: NSObject
     private var myAuthors: [Author] = Array()
     private var myShelves: [Shelf] = Array()
     private var myCategories: [String] = Array()
-    var shelfString: String = ""
-    var authorString: String = ""
+    private var myShelfString: String = ""
+    private var myAuthorString: String = ""
     
     var bookID: String
     {
@@ -506,6 +506,22 @@ class Book: NSObject
         }
     }
     
+    var authorString: String
+    {
+        get
+        {
+            return myAuthorString
+        }
+    }
+
+    var shelfString: String
+        {
+        get
+        {
+            return myShelfString
+        }
+    }
+
     override init()
     {
         myAuthors.removeAll()
@@ -595,7 +611,7 @@ class Book: NSObject
     {
         myAuthors.removeAll()
         
-        authorString = ""
+        myAuthorString = ""
         
         for myItem in myDatabaseConnection.getBookAuthor(bookID: myBookID)
         {
@@ -605,22 +621,21 @@ class Book: NSObject
             
             myAuthors.append(myAuthor)
             
-            if authorString != ""
+            if myAuthorString != ""
             {
-                authorString = authorString + ", "
+                myAuthorString = myAuthorString + ", "
             }
             
             let tempAuthor = Author(authorName: myItem.authorID!)
             
-            authorString = authorString + tempAuthor.authorName
+            myAuthorString = myAuthorString + tempAuthor.authorName
         }
-
     }
     
     func loadShelves()
     {
         myShelves.removeAll()
-        shelfString = ""
+        myShelfString = ""
         
         for myItem in myDatabaseConnection.getBookShelf(bookID: myBookID)
         {
@@ -628,14 +643,14 @@ class Book: NSObject
             
             myShelves.append(myShelf)
             
-            if shelfString != ""
+            if myShelfString != ""
             {
-                shelfString = shelfString + ", "
+                myShelfString = myShelfString + ", "
             }
             
             let tempShelf = Shelf(shelfID: myItem.shelfID!)
             
-            shelfString = shelfString + tempShelf.shelfName
+            myShelfString = myShelfString + tempShelf.shelfName
 
         }
     }
@@ -690,22 +705,22 @@ class Book: NSObject
     
     func addToShelf(shelfID: String, googleData: GoogleBooks)
     {
-        googleData.googleAssignBookToShelf(bookID: myBookID, shelfID: shelfID)
-        
         let myShelf = Shelf(shelfID: shelfID)
         saveShelf(shelfID: myShelf.shelfID)
-        
+
+        googleData.googleAssignBookToShelf(bookID: myBookID, shelfID: shelfID)
+
         loadShelves()
     }
 
     func removeFromShelf(shelfID: String, googleData: GoogleBooks)
     {
-        // Delete from Google
-        googleData.googleRemoveBookFromShelf(bookID: myBookID, shelfID: shelfID)
-        
         // Delete from local DB
         
         myDatabaseConnection.deleteBookFromShelf(myBookID, shelfID: shelfID)
+
+        // Delete from Google
+        googleData.googleRemoveBookFromShelf(bookID: myBookID, shelfID: shelfID)
     }
 
     func moveBetweenShelves(fromShelfID: String, toShelfID: String, googleData: GoogleBooks)

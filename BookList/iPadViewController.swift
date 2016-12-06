@@ -8,9 +8,16 @@
 
 import UIKit
 
-class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, MyPickerDelegate
+protocol MyMainDelegate
+{
+    func reloadTable()
+}
+
+class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, MyPickerDelegate, MyMainDelegate
 {
     @IBOutlet weak var tableBooks: UITableView!
+    @IBOutlet weak var txtSearch: UITextField!
+    @IBOutlet weak var btnSearch: UIButton!
     
     var googleData: GoogleBooks!
     
@@ -67,31 +74,42 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?)
     {
-        if segue.identifier == "bookDetailSegue"
+        switch segue.identifier!
         {
-            let bookDetailView = segue.destination as! bookDetailsViewController
-            
-            let workingSender = sender as! IndexPath
-            
-            bookDetailView.googleData = googleData
-            bookDetailView.section = workingSender.section
-            bookDetailView.row = workingSender.row
-        }
-        else if segue.identifier == "stringPickerSegue"
-        {
-            let stringPicker = segue.destination as! StringPickerViewController
-            
-            // Display the picker with the list of available shelves
-            
-            var displayArray: [String] = Array()
-            
-            for myItem in shelfList.shelves
-            {
-                displayArray.append(myItem.shelfName)
-            }
-            
-            stringPicker.displayArray = displayArray
-            stringPicker.delegate = self
+            case "bookDetailSegue" :
+                let bookDetailView = segue.destination as! bookDetailsViewController
+                
+                let workingSender = sender as! IndexPath
+                
+                bookDetailView.googleData = googleData
+                bookDetailView.section = workingSender.section
+                bookDetailView.row = workingSender.row
+                bookDetailView.delegate = self
+                
+            case "stringPickerSegue" :
+                let stringPicker = segue.destination as! StringPickerViewController
+                
+                // Display the picker with the list of available shelves
+                
+                var displayArray: [String] = Array()
+                
+                for myItem in shelfList.shelves
+                {
+                    displayArray.append(myItem.shelfName)
+                }
+                
+                stringPicker.displayArray = displayArray
+                stringPicker.delegate = self
+                
+            case "booksForAuthorSegue" :
+                let bookAuthorListView = segue.destination as! booksForAuthorViewController
+                
+                bookAuthorListView.googleData = googleData
+                bookAuthorListView.delegate = self
+
+
+            default :
+                print("iPadViewController - prepare - segue not found \(segue.identifier)")
         }
     }
         
@@ -221,10 +239,15 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
         return 40.0
     }
  
+    @IBAction func btnSearch(_ sender: UIButton)
+    {
+        reloadTable()
+    }
+    
     func googleDataBooksLoaded()
     {
         notificationCenter.removeObserver(goodReadsBookLoadFinished)
-        
+
         loadShelves()
         
         reloadTable()
@@ -232,7 +255,9 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     func reloadTable()
     {
-        googleData.sort()
+        googleData.filter = txtSearch.text!
+
+        //        googleData.sort()
         
 //            switch googleData.sortOrder
 //            {

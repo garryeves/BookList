@@ -30,6 +30,7 @@ class bookDetailsViewController: UIViewController, UITableViewDataSource, UITabl
     var googleData: GoogleBooks!
     var section: Int!
     var row: Int!
+    var delegate: MyMainDelegate!
     
     private var workingAuthors: [Author] = Array()
     private var shelfList: ShelvesList!
@@ -130,11 +131,19 @@ class bookDetailsViewController: UIViewController, UITableViewDataSource, UITabl
     
     @IBAction func btnSave(_ sender: UIBarButtonItem)
     {
+        if delegate != nil
+        {
+            delegate.reloadTable()
+        }
         dismiss(animated: true, completion: nil)
     }
     
     @IBAction func btnBack(_ sender: UIBarButtonItem)
     {
+        if delegate != nil
+        {
+            delegate.reloadTable()
+        }
         dismiss(animated: true, completion: nil)
     }
     

@@ -27,6 +27,7 @@ struct workingBooksForAuthor
     var publishedDate: Date!
     var imageURL: String = ""
     var authors: [String] = Array()
+    var authorString: String = ""
     var currentShelf: String = ""
     var newShelf: String = ""
 }
@@ -42,6 +43,7 @@ class GoogleBooks: NSObject
     private var mySortOrderChanged: Bool = true
     private var myAuthorBookArray: [workingBooksForAuthor] = Array()
     private var getRecordsAmount: Int = 40
+    private var mySearchString: String = ""
     
     var books: [displayItem]
     {
@@ -72,6 +74,21 @@ class GoogleBooks: NSObject
             return myAuthorBookArray
         }
     }
+    
+    var filter: String
+    {
+        get
+        {
+            return mySearchString
+        }
+        set
+        {
+            mySearchString = newValue
+            sort()
+            myDisplayArray = buildDisplayArray(sortOrder: mySortOrder)
+        }
+    }
+    
     
     private func getWithOutAuthentication(URLString: String, noParams: Bool = false) -> AnyObject
     {
@@ -316,7 +333,7 @@ class GoogleBooks: NSObject
             {
                 for myItem in json["items"].array!
                 {
-                    myBook = processBookrecord(json: myItem, shelfName: shelfName)
+                    myBook = processBookRecord(json: myItem, shelfName: shelfName)
                     
                     myWorkingBooks.append(myBook)
                 }
@@ -324,7 +341,7 @@ class GoogleBooks: NSObject
         }
     }
     
-    private func processBookrecord(json: JSON, shelfName: String) -> Book
+    private func processBookRecord(json: JSON, shelfName: String) -> Book
     {
         var myBook: Book!
 
@@ -431,9 +448,12 @@ class GoogleBooks: NSObject
             myBook.addAuthor(authorDetails: myAuthor, role: "Author")
         }
         
-        myBook.removeFromShelf()
-        
-        myBook.addToShelf(shelfName: shelfName)
+        if shelfName != ""
+        {
+            myBook.removeFromShelf()
+            
+            myBook.addToShelf(shelfName: shelfName)
+        }
         
         myBook.removeCategories()
         
@@ -450,7 +470,7 @@ class GoogleBooks: NSObject
         return myBook
     }
 
-    func getBookFromGoogle(bookID: String) -> Book?
+    func getBookFromGoogle(bookID: String, shelfName: String) -> Book?
     {
         var myBook: Book!
         
@@ -494,7 +514,7 @@ class GoogleBooks: NSObject
             
             if continueProcessing
             {
-                myBook = processBookrecord(json: json, shelfName: "")
+                myBook = processBookRecord(json: json, shelfName: shelfName)
                 
                 myWorkingBooks.append(myBook)
             }
@@ -566,131 +586,7 @@ class GoogleBooks: NSObject
             
             if continueProcessing
             {
-                for myItem in json["items"].array!
-                {
-//print("MyItem = \(myItem)")
-                    var bookName: String = ""
-                    if myItem["volumeInfo"]["title"].string != nil
-                    {
-                        bookName = myItem["volumeInfo"]["title"].string!
-                    }
-
-                    let myDateFormatter = DateFormatter()
-                    myDateFormatter.dateFormat = "yyyy-MM-dd"
-
-                    var published: String = "01/01/1901"
-                    var publishedDate: Date!
-                    publishedDate = myDateFormatter.date(from: "1901-01-01")!
-                    
-                    if myItem["volumeInfo"]["publishedDate"].string != nil
-                    {
-                        // Here we will manuipulate the date in order to have a consistent format
-                        
-                        let workingString = myItem["volumeInfo"]["publishedDate"].string!
-
-                        var tempString: String = ""
-
-                        switch workingString.characters.count
-                        {
-                            case 4:
-                                // year only
-                                tempString = "\(workingString)-01-01"
-                                
-                            case 7:
-                                // year and month
-                                tempString = "\(workingString)-01"
-                                
-                            case 10:
-                                
-                                // year, month and day
-                                tempString = "\(workingString)"
-                            
-                            default:
-                                tempString = "1901-01-01"
-                        }
-                        
-                        publishedDate = myDateFormatter.date(from: tempString)!
-                        
-                        myDateFormatter.dateFormat = "dd MMM yyyy"
-                        
-                        published =  myDateFormatter.string(from: publishedDate)
-                    }
-
-                    var bookID: String = ""
-                    if myItem["id"].string != nil
-                    {
-                        bookID = myItem["id"].string!
-                    }
-                    
-                    var imageURL: String = ""
-
-                    if myItem["volumeInfo"]["imageLinks"]["thumbnail"].string != nil
-                    {
-                        imageURL = myItem["volumeInfo"]["imageLinks"]["thumbnail"].string!
-//print("Image = \(imageURL)")
-                    }
-                    
-                    var authorFound: Bool = false
-                    var authorList: [String] = Array()
-                    
-                    if myItem["volumeInfo"]["authors"].array != nil
-                    {
-                        for myItemAuthor in myItem["volumeInfo"]["authors"].array!
-                        {
-                            if "\(myItemAuthor)" == authorName
-                            {
-                                authorFound = true
-                            }
-                            authorList.append("\(myItemAuthor)")
-                        }
-                    }
-                    
-                    if authorFound
-                    {
-                        // First thing is to check that we do not have a duplicate, based on bookID
-                        
-                        var bookFound: Bool = false
-                        
-                        for myBookItem in myAuthorBookArray
-                        {
-                            if myBookItem.bookID == bookID
-                            {
-                                bookFound = true
-                                break
-                            }
-                        }
-                        
-                        if !bookFound
-                        {
-                            var tempAuthors: [String] = Array()
-                            
-                            for myName in authorList
-                            {
-                                tempAuthors.append("\(myName)")
-                            }
-                            
-                            // Check to see if we already have this book on record
-                            var currentShelf: String = ""
-                            
-                            for myExistingBook in myDatabaseConnection.getBookShelf(bookID: bookID)
-                            {
-                                let myShelfName = Shelf(shelfID: myExistingBook.shelfID!)
-                                currentShelf = myShelfName.shelfName
-                            }
-                            
-                            let myTemp = workingBooksForAuthor(bookID: bookID,
-                                                                bookName: bookName,
-                                                                published: published,
-                                                                publishedDate: publishedDate,
-                                                                imageURL: imageURL,
-                                                                authors: tempAuthors,
-                                                                currentShelf: currentShelf,
-                                                                newShelf: "")
-                            
-                            myAuthorBookArray.append(myTemp)
-                        }
-                    }
-                }
+                processSearchBooks(json: json, authorName: authorName)
 
                 // Do we need to loop
             
@@ -703,22 +599,6 @@ class GoogleBooks: NSObject
         
         if startIndex == 0
         {
-//print("all done \(myAuthorBookArray.count)")
-//
-//for myBookItem in myAuthorBookArray
-//{
-//    print("Title = \(myBookItem.bookName)")
-//    print("published = \(myBookItem.published)")
-//    print("bookID = \(myBookItem.bookID)")
-//    
-//    for myName in myBookItem.authors
-//    {
-//        print("Author = \(myName)")
-//    }
-//}
-//            
-//            print("Finished getBooksForAuthor \(authorName) startIndex = \(startIndex)")
-        
             //sort the entries on published date
             myAuthorBookArray.sort
             {
@@ -736,6 +616,235 @@ class GoogleBooks: NSObject
         }
     }
 
+    func searchBooks(searchTerm: String, startIndex: Int)
+    {
+        //       print("getBooksForAuthor \(authorName) startIndex = \(startIndex)")
+        
+        if startIndex == 0
+        {
+            myAuthorBookArray.removeAll()
+        }
+        
+        let newString = searchTerm.replacingOccurrences(of: " ", with: "+")
+        //   let newString = authorName.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+        
+        let result = getWithOutAuthentication(URLString: "https://www.googleapis.com/books/v1/volumes?q='\(newString)'&orderBy=relevance&maxResults=\(getRecordsAmount)&startIndex=\(startIndex)")
+        
+        
+        if result is String
+        {
+            print("Error searching books")
+        }
+        else
+        {
+            let json = JSON(data: result as! Data)
+            
+            // Check to see if there was an error returned
+            
+            var continueProcessing: Bool = true
+            
+            for (key,_):(String, JSON) in json {
+                //Do something you want
+                if key == "error"
+                {
+                    continueProcessing = false
+                    break
+                }
+                
+                if key == "totalItems"
+                {
+                    let numItems = json["totalItems"].int!
+                    
+                    if numItems < 1
+                    {
+                        continueProcessing = false
+                        break
+                    }
+                }
+                break
+            }
+            
+            if continueProcessing
+            {
+                processSearchBooks(json: json)
+                
+                // Do we need to loop
+
+                // Get max 2 pages as we are sorting by relevance
+                
+//                if totalItems > startIndex + getRecordsAmount
+                if startIndex > getRecordsAmount 
+                {
+                    let _ = searchBooks(searchTerm: searchTerm, startIndex: startIndex + getRecordsAmount)
+                }
+            }
+        }
+        
+        if startIndex == 0
+        {
+            //sort the entries on published date
+//            myAuthorBookArray.sort
+//                {
+//                    if $0.publishedDate != $1.publishedDate
+//                    {
+//                        return $0.publishedDate < $1.publishedDate
+//                    }
+//                    else
+//                    {
+//                        return $0.publishedDate < $1.publishedDate
+//                    }
+//            }
+            
+            notificationCenter.post(name: googleBooksAuthorLoadFinished, object: nil)
+        }
+    }
+
+    func processSearchBooks(json: JSON, authorName: String = "")
+    {
+        for myItem in json["items"].array!
+        {
+            //print("MyItem = \(myItem)")
+            var bookName: String = ""
+            if myItem["volumeInfo"]["title"].string != nil
+            {
+                bookName = myItem["volumeInfo"]["title"].string!
+            }
+            
+            let myDateFormatter = DateFormatter()
+            myDateFormatter.dateFormat = "yyyy-MM-dd"
+            
+            var published: String = "01/01/1901"
+            var publishedDate: Date!
+            publishedDate = myDateFormatter.date(from: "1901-01-01")!
+            
+            if myItem["volumeInfo"]["publishedDate"].string != nil
+            {
+                // Here we will manuipulate the date in order to have a consistent format
+                
+                let workingString = myItem["volumeInfo"]["publishedDate"].string!
+                
+                var tempString: String = ""
+                
+                switch workingString.characters.count
+                {
+                case 4:
+                    // year only
+                    tempString = "\(workingString)-01-01"
+                    
+                case 7:
+                    // year and month
+                    tempString = "\(workingString)-01"
+                    
+                case 10:
+                    
+                    // year, month and day
+                    tempString = "\(workingString)"
+                    
+                default:
+                    tempString = "1901-01-01"
+                }
+                
+                publishedDate = myDateFormatter.date(from: tempString)!
+                
+                myDateFormatter.dateFormat = "dd MMM yyyy"
+                
+                published =  myDateFormatter.string(from: publishedDate)
+            }
+            
+            var bookID: String = ""
+            if myItem["id"].string != nil
+            {
+                bookID = myItem["id"].string!
+            }
+            
+            var imageURL: String = ""
+            
+            if myItem["volumeInfo"]["imageLinks"]["thumbnail"].string != nil
+            {
+                imageURL = myItem["volumeInfo"]["imageLinks"]["thumbnail"].string!
+                //print("Image = \(imageURL)")
+            }
+            
+            var authorFound: Bool = false
+            var authorList: [String] = Array()
+            
+            if myItem["volumeInfo"]["authors"].array != nil
+            {
+                for myItemAuthor in myItem["volumeInfo"]["authors"].array!
+                {
+            
+                    if authorName != ""
+                    {
+                        if "\(myItemAuthor)" == authorName
+                        {
+                            authorFound = true
+                        }
+                    }
+                    else
+                    {
+                        authorFound = true
+                    }
+                    authorList.append("\(myItemAuthor)")
+                }
+            }
+            
+            if authorFound
+            {
+                // First thing is to check that we do not have a duplicate, based on bookID
+                
+                var bookFound: Bool = false
+                
+                for myBookItem in myAuthorBookArray
+                {
+                    if myBookItem.bookID == bookID
+                    {
+                        bookFound = true
+                        break
+                    }
+                }
+                
+                if !bookFound
+                {
+                    var tempAuthors: [String] = Array()
+                    var authorString: String = ""
+                    
+                    for myName in authorList
+                    {
+                        if authorString != ""
+                        {
+                            authorString = authorString + ", "
+                        }
+                        
+                        authorString = authorString + myName
+                        
+                        tempAuthors.append("\(myName)")
+                    }
+                    
+                    // Check to see if we already have this book on record
+                    var currentShelf: String = ""
+                    
+                    for myExistingBook in myDatabaseConnection.getBookShelf(bookID: bookID)
+                    {
+                        let myShelfName = Shelf(shelfID: myExistingBook.shelfID!)
+                        currentShelf = myShelfName.shelfName
+                    }
+                    
+                    let myTemp = workingBooksForAuthor(bookID: bookID,
+                                                       bookName: bookName,
+                                                       published: published,
+                                                       publishedDate: publishedDate,
+                                                       imageURL: imageURL,
+                                                       authors: tempAuthors,
+                                                       authorString: authorString,
+                                                       currentShelf: currentShelf,
+                                                       newShelf: "")
+                    
+                    myAuthorBookArray.append(myTemp)
+                }
+            }
+        }
+    }
+    
     func googleAssignBookToShelf(bookID: String, shelfID: String)
     {
         let result = postWithAuthentication(URLString: "https://www.googleapis.com/books/v1/mylibrary/bookshelves/\(shelfID)/addVolume?volumeId=\(bookID)")
@@ -748,6 +857,7 @@ class GoogleBooks: NSObject
         {
             _ = JSON(data: result as! Data)
             
+            sort()
 //print("JSON = \(json)")
         }
     }
@@ -764,6 +874,8 @@ class GoogleBooks: NSObject
         {
             _ = JSON(data: result as! Data)
             
+            sort()
+
 //print("JSON = \(json)")
         }
     }
@@ -772,14 +884,28 @@ class GoogleBooks: NSObject
     {
         switch mySortOrder
         {
-        case sortOrderShelf :
-            myBooks.sort
-                {
-                    if $0.shelfString != $1.shelfString
+            case sortOrderShelf :
+                myBooks.sort
                     {
-                        return $0.shelfString < $1.shelfString
-                    }
-                    else
+                        if $0.shelfString != $1.shelfString
+                        {
+                            return $0.shelfString < $1.shelfString
+                        }
+                        else
+                        {
+                            if $0.authorString != $1.authorString
+                            {
+                                return $0.authorString < $1.authorString
+                            }
+                            else
+                            {
+                                return $0.publishedDate < $1.publishedDate
+                            }
+                        }
+                }
+                
+            case sortOrderAuthor :
+                myBooks.sort
                     {
                         if $0.authorString != $1.authorString
                         {
@@ -789,32 +915,63 @@ class GoogleBooks: NSObject
                         {
                             return $0.publishedDate < $1.publishedDate
                         }
-                    }
-            }
-            
-        case sortOrderAuthor :
-            myBooks.sort
-                {
-                    if $0.authorString != $1.authorString
-                    {
-                        return $0.authorString < $1.authorString
-                    }
-                    else
-                    {
-                        return $0.publishedDate < $1.publishedDate
-                    }
-            }
-            
-        default:
-            print("goodreadsdata: Sort - hit default for some reason - \(mySortOrder)")
+                }
+                
+            default:
+                print("goodreadsdata: Sort - hit default for some reason - \(mySortOrder)")
         }
         
-        myDisplayArray = buildDisplayArray(sourceArray: myBooks, sortOrder: mySortOrder)
+//        myDisplayArray = buildDisplayArray(sourceArray: myBooks, sortOrder: mySortOrder)
+        myDisplayArray = buildDisplayArray(sortOrder: mySortOrder)
         
         mySortOrderChanged = false
     }
 
-    private func buildDisplayArray(sourceArray: [Book], sortOrder: String) -> [displayItem]
+//    func filter(searchString: String)
+//    {
+//        mySearchString = searchString
+//        myDisplayArray = buildDisplayArray(sortOrder: mySortOrder)
+    
+//        if mySearchString == ""
+//        {
+//            myDisplayArray = buildDisplayArray(sourceArray: myBooks, sortOrder: mySortOrder)
+//        }
+//        else
+//        {
+//            var workingArray: [Book] = Array()
+//            for myItem in myBooks
+//            {
+//                var matchFound: Bool = false
+//                if myItem.bookName.lowercased().contains(mySearchString.lowercased())
+//                {
+//                    matchFound = true
+//                }
+//                else
+//                {
+//                    // Search through authors
+//                    
+//                    for myAuthor in myItem.authors
+//                    {
+//                        if myAuthor.authorName.lowercased().contains(mySearchString.lowercased())
+//                        {
+//                            matchFound = true
+//                            break
+//                        }
+//                    }
+//                }
+//                
+//                if matchFound
+//                {
+//                    workingArray.append(myItem)
+//                }
+//            }
+//            
+//            myDisplayArray = buildDisplayArray(sourceArray: workingArray, sortOrder: mySortOrder)
+//        }
+//    }
+    
+//    private func buildDisplayArray(sourceArray: [Book], sortOrder: String) -> [displayItem]
+    private func buildDisplayArray(sortOrder: String) -> [displayItem]
     {
         var displayArray: [displayItem] = Array()
         
@@ -828,6 +985,42 @@ class GoogleBooks: NSObject
             for myItem in myDisplayArray
             {
                 displayStatePreservation.append(myItem.state)
+            }
+        }
+        
+        var sourceArray : [Book] = Array()
+        
+        if mySearchString == ""
+        {
+            sourceArray = myBooks
+        }
+        else
+        {
+            for myItem in myBooks
+            {
+                var matchFound: Bool = false
+                if myItem.bookName.lowercased().contains(mySearchString.lowercased())
+                {
+                    matchFound = true
+                }
+                else
+                {
+                    // Search through authors
+                    
+                    for myAuthor in myItem.authors
+                    {
+                        if myAuthor.authorName.lowercased().contains(mySearchString.lowercased())
+                        {
+                            matchFound = true
+                            break
+                        }
+                    }
+                }
+                
+                if matchFound
+                {
+                    sourceArray.append(myItem)
+                }
             }
         }
         
