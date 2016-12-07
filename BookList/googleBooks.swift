@@ -38,18 +38,33 @@ class GoogleBooks: NSObject
     
     private var myBooks: [Book] = Array()
     private var myWorkingBooks: [Book] = Array()
-    private var mySortOrder: String = sortOrderShelf
+    private var mySortType: String = sortTypeShelf
     private var myDisplayArray: [displayItem]! = Array()
-    private var mySortOrderChanged: Bool = true
+    private var mySortTypeChanged: Bool = true
     private var myAuthorBookArray: [workingBooksForAuthor] = Array()
     private var getRecordsAmount: Int = 40
     private var mySearchString: String = ""
+    private var mySortOrder: String = sortOrderAscending
     
     var books: [displayItem]
     {
         get
         {
             return myDisplayArray
+        }
+    }
+    
+    var sortType: String
+    {
+        get
+        {
+            return mySortType
+        }
+        set
+        {
+            mySortTypeChanged = true
+            mySortType = newValue
+            sort()
         }
     }
     
@@ -61,7 +76,6 @@ class GoogleBooks: NSObject
         }
         set
         {
-            mySortOrderChanged = true
             mySortOrder = newValue
             sort()
         }
@@ -85,7 +99,7 @@ class GoogleBooks: NSObject
         {
             mySearchString = newValue
             sort()
-            myDisplayArray = buildDisplayArray(sortOrder: mySortOrder)
+      //      myDisplayArray = buildDisplayArray(sortOrder: mySortType)
         }
     }
     
@@ -279,7 +293,7 @@ class GoogleBooks: NSObject
         
         for myShelf in myDatabaseConnection.getShelves()
         {
-            getBooksFromGoogle(shelfID: myShelf.shelfID!, shelfName: myShelf.shelfName!)
+            getBooksFromGoogle(shelfID: myShelf.shelfID!, shelfName: myShelf.shelfName!, startIndex: 0)
         }
         
         self.loadBooks()
@@ -288,13 +302,13 @@ class GoogleBooks: NSObject
         
 //        notificationCenter.post(name: goodReadsBookLoadFinished, object: nil)
     }
-    
-    private func getBooksFromGoogle(shelfID: String, shelfName: String)
+
+    private func getBooksFromGoogle(shelfID: String, shelfName: String, startIndex: Int)
     {
         var myBook: Book!
-        
-//print("Getting for shelf \(shelfName)")
-        let result = getWithAuthentication(URLString: "https://www.googleapis.com/books/v1/mylibrary/bookshelves/\(shelfID)/volumes")
+        var totalItems: Int = 0
+
+        let result = getWithAuthentication(URLString: "https://www.googleapis.com/books/v1/mylibrary/bookshelves/\(shelfID)/volumes?maxResults=\(getRecordsAmount)&startIndex=\(startIndex)")
         
         if result is String
         {
@@ -318,9 +332,9 @@ class GoogleBooks: NSObject
                 
                 if key == "totalItems"
                 {
-                    let numItems = json["totalItems"].int!
+                    totalItems = json["totalItems"].int!
                     
-                    if numItems < 1
+                    if totalItems < 1
                     {
                         continueProcessing = false
                         break
@@ -337,10 +351,15 @@ class GoogleBooks: NSObject
                     
                     myWorkingBooks.append(myBook)
                 }
+                
+                if totalItems > startIndex + getRecordsAmount
+                {
+                    getBooksFromGoogle(shelfID: shelfID, shelfName: shelfName, startIndex: startIndex + getRecordsAmount)
+                }
             }
         }
     }
-    
+
     private func processBookRecord(json: JSON, shelfName: String) -> Book
     {
         var myBook: Book!
@@ -599,18 +618,7 @@ class GoogleBooks: NSObject
         
         if startIndex == 0
         {
-            //sort the entries on published date
-            myAuthorBookArray.sort
-            {
-                if $0.publishedDate != $1.publishedDate
-                {
-                    return $0.publishedDate < $1.publishedDate
-                }
-                else
-                {
-                    return $0.publishedDate < $1.publishedDate
-                }
-            }
+            sortSearchResults()
 
             notificationCenter.post(name: googleBooksAuthorLoadFinished, object: nil)
         }
@@ -882,9 +890,9 @@ class GoogleBooks: NSObject
 
     func sort()
     {
-        switch mySortOrder
+        switch mySortType
         {
-            case sortOrderShelf :
+            case sortTypeShelf :
                 myBooks.sort
                     {
                         if $0.shelfString != $1.shelfString
@@ -893,84 +901,68 @@ class GoogleBooks: NSObject
                         }
                         else
                         {
-                            if $0.authorString != $1.authorString
+                            if $0.sortAuthor != $1.sortAuthor
                             {
-                                return $0.authorString < $1.authorString
+                                return $0.sortAuthor < $1.sortAuthor
                             }
                             else
                             {
-                                return $0.publishedDate < $1.publishedDate
+                                if mySortOrder == sortOrderAscending
+                                {
+                                    return $0.publishedDate < $1.publishedDate
+                                }
+                                else
+                                {
+                                    return $1.publishedDate < $0.publishedDate
+                                }
                             }
                         }
-                }
-                
-            case sortOrderAuthor :
+                    }
+            
+            case sortTypeAuthor :
                 myBooks.sort
                     {
-                        if $0.authorString != $1.authorString
+                        if $0.sortAuthor != $1.sortAuthor
                         {
-                            return $0.authorString < $1.authorString
+                            return $0.sortAuthor < $1.sortAuthor
                         }
                         else
                         {
-                            return $0.publishedDate < $1.publishedDate
+                            if mySortOrder == sortOrderAscending
+                            {
+                                return $0.publishedDate < $1.publishedDate
+                            }
+                            else
+                            {
+                                return $1.publishedDate < $0.publishedDate
+                            }
                         }
-                }
-                
+                    }
+            
             default:
-                print("goodreadsdata: Sort - hit default for some reason - \(mySortOrder)")
+                print("goodreadsdata: Sort - hit default for some reason - \(mySortType)")
         }
         
-//        myDisplayArray = buildDisplayArray(sourceArray: myBooks, sortOrder: mySortOrder)
-        myDisplayArray = buildDisplayArray(sortOrder: mySortOrder)
+        myDisplayArray = buildDisplayArray(sortOrder: mySortType)
         
-        mySortOrderChanged = false
+        mySortTypeChanged = false
     }
 
-//    func filter(searchString: String)
-//    {
-//        mySearchString = searchString
-//        myDisplayArray = buildDisplayArray(sortOrder: mySortOrder)
-    
-//        if mySearchString == ""
-//        {
-//            myDisplayArray = buildDisplayArray(sourceArray: myBooks, sortOrder: mySortOrder)
-//        }
-//        else
-//        {
-//            var workingArray: [Book] = Array()
-//            for myItem in myBooks
-//            {
-//                var matchFound: Bool = false
-//                if myItem.bookName.lowercased().contains(mySearchString.lowercased())
-//                {
-//                    matchFound = true
-//                }
-//                else
-//                {
-//                    // Search through authors
-//                    
-//                    for myAuthor in myItem.authors
-//                    {
-//                        if myAuthor.authorName.lowercased().contains(mySearchString.lowercased())
-//                        {
-//                            matchFound = true
-//                            break
-//                        }
-//                    }
-//                }
-//                
-//                if matchFound
-//                {
-//                    workingArray.append(myItem)
-//                }
-//            }
-//            
-//            myDisplayArray = buildDisplayArray(sourceArray: workingArray, sortOrder: mySortOrder)
-//        }
-//    }
-    
-//    private func buildDisplayArray(sourceArray: [Book], sortOrder: String) -> [displayItem]
+    func sortSearchResults()
+    {
+        myAuthorBookArray.sort
+        {
+            if mySortOrder == sortOrderAscending
+            {
+                return $0.publishedDate < $1.publishedDate
+            }
+            else
+            {
+                return $1.publishedDate < $0.publishedDate
+            }
+        }
+    }
+
     private func buildDisplayArray(sortOrder: String) -> [displayItem]
     {
         var displayArray: [displayItem] = Array()
@@ -979,8 +971,9 @@ class GoogleBooks: NSObject
         var workingItem: String = ""
         var workingBookArray: [Book] = Array()
         var displayStatePreservation: [String] = Array()
+        var lastBookProcessed: Book!
         
-        if !mySortOrderChanged
+        if !mySortTypeChanged
         {
             for myItem in myDisplayArray
             {
@@ -1026,13 +1019,14 @@ class GoogleBooks: NSObject
         
         for myBook in sourceArray
         {
-            if sortOrder == sortOrderShelf
+            if sortOrder == sortTypeShelf
             {
                 workingItem = myBook.shelfString
             }
             else
             {
-                workingItem = myBook.authorString
+                workingItem = myBook.sortAuthor
+             //   workingItem = myBook.authorString
             }
             
             if currentItem != workingItem
@@ -1048,9 +1042,12 @@ class GoogleBooks: NSObject
                     
                     // Now make sure we keep the state, if sort order not changed
                     
-                    if !mySortOrderChanged
+                    if !mySortTypeChanged
                     {
-                        tempItem.state = displayStatePreservation[displayArray.count]
+                        if displayArray.count < displayStatePreservation.count
+                        {
+                            tempItem.state = displayStatePreservation[displayArray.count]
+                        }
                     }
                     
                     displayArray.append(tempItem)
@@ -1062,14 +1059,28 @@ class GoogleBooks: NSObject
             
             // Now lets process the book
             
-            workingBookArray.append(myBook)
+            // If we are listing via shelf then do not want duplicate books
+            
+            if sortOrder == sortTypeShelf
+            {
+                if lastBookProcessed == nil || lastBookProcessed.bookID != myBook.bookID
+                {
+                    workingBookArray.append(myBook)
+                }
+                
+                lastBookProcessed = myBook
+            }
+            else
+            { //By author so show all book entries
+                workingBookArray.append(myBook)
+            }
         }
         
         let tempItem = displayItem(itemName: currentItem, books: workingBookArray)
         
         // Now make sure we keep the state, if sort order not changed
         
-        if !mySortOrderChanged
+        if !mySortTypeChanged
         {
             if displayStatePreservation.count > 0
             {
@@ -1091,64 +1102,16 @@ class GoogleBooks: NSObject
         
         for myItem in myDatabaseConnection.getBooks()
         {
-            let myBook = Book(bookID: myItem.bookID!)
+            // Need to get the authors for the book as this is needed to ensure that the list sorts correctly
             
-            myBooks.append(myBook)
+            for myAuthors in myDatabaseConnection.getBookAuthor(bookID: myItem.bookID!)
+            {
+//                let myAuthor = Author(authorID: myAuthors.authorID!)
+//print("Authro Name = \(myAuthor.authorName)  ID = \(myAuthors.authorID!)")
+                let myBook = Book(bookID: myItem.bookID!, sortAuthor: myAuthors.authorID!)
+            
+                myBooks.append(myBook)
+            }
         }
     }
-    
-    //Dummy statements
-    //for myItem in arrayNames
-    //{
-    //    print("Title2 = \(myItem)")
-    //}
-    //
-    //
-    //for (index,subJson):(String, JSON) in json
-    //{
-    //    print("Index = \(index)")
-    //    print("sub = \(subJson)")
-    //}
-    //
-    //for myItem in json["items"].array!
-    //{
-    //    print("Item = \(myItem)")
-    //    let access = myItem["access"].string!
-    
-
-    
-    //    func getBookInfo(isbn: String) {
-    //        guard let url = URL(string: "https://www.googleapis.com/books/v1/volumes?q=isbn:\(isbn)") else {
-    //            print("the url is not valid")
-    //            return
-    //        }
-    //        let mySession = URLSession.shared
-    //
-    //
-    //        mySession.dataTask(with: url, completionHandler: {data, response, error -> Void in
-    //            guard error == nil else {
-    //                print(response!)
-    //                print(error!.localizedDescription)
-    //                return
-    //            }
-    //            guard let data = data else {
-    //                print("no error but no data")
-    //                print(response!)
-    //                return
-    //            }
-    //            guard let jsonResult = try? JSONSerialization.jsonObject(with: data, options: []) else {
-    //                print("the JSON is not valid")
-    //                return
-    //            }
-    //            print("Book Result = \(jsonResult)")
-    //
-    //            if let arrayOfTitles = (jsonResult as AnyObject).value(forKeyPath: "items.volumeInfo.title") as? [String] {
-    //                print(arrayOfTitles)
-    //            }
-    //            if let arrayOfAuthors = (jsonResult as AnyObject).value(forKeyPath: "items.volumeInfo.authors") as? [[String]] {
-    //                print(arrayOfAuthors)
-    //            }
-    //        }).resume()
-    //    }
-
 }

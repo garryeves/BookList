@@ -170,18 +170,18 @@ class iPhoneViewController: UIViewController, UITableViewDataSource, UITableView
     {
         googleData.sort()
         
-        switch googleData.sortOrder
+        switch googleData.sortType
         {
-        case sortOrderShelf :
+        case sortTypeShelf :
             headerCell.btnShelf.isEnabled = false
             headerCell.btnAuthor.isEnabled = true
             
-        case sortOrderAuthor :
+        case sortTypeAuthor :
             headerCell.btnAuthor.isEnabled = false
             headerCell.btnShelf.isEnabled = true
             
         default:
-            print("ipadTableView: Set sort buttons - hit default for some reason - \(googleData.sortOrder)")
+            print("ipadTableView: Set sort type buttons - hit default for some reason - \(googleData.sortType)")
         }
         
         tableBooks.reloadData()

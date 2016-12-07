@@ -6,4 +6,5 @@ project '/Users/garryeves/Documents/xcode/BookList/BookList/BookList.xcodeproj'
 target 'BookList' do
 pod 'Google/SignIn'
 pod 'SwiftyJSON'
+pod 'DLRadioButton'
 end

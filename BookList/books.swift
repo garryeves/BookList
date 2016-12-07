@@ -77,6 +77,7 @@ class Book: NSObject
     private var myCategories: [String] = Array()
     private var myShelfString: String = ""
     private var myAuthorString: String = ""
+    private var mySortAuthor: String = ""
     
     var bookID: String
     {
@@ -515,13 +516,21 @@ class Book: NSObject
     }
 
     var shelfString: String
-        {
+    {
         get
         {
             return myShelfString
         }
     }
 
+    var sortAuthor: String
+    {
+        get
+        {
+            return mySortAuthor
+        }
+    }
+    
     override init()
     {
         myAuthors.removeAll()
@@ -571,9 +580,57 @@ class Book: NSObject
         loadAuthors()
         loadShelves()
         loadCategories()
+
+        mySortAuthor = myAuthorString
     }
-    
-    init(bookID: String, bookName: String, publicationDay: String, publicationYear: String, publicationMonth: String, published: String, ISBN: String, ISBN13: String, imageUrl: String, smallImageUrl: String, largeImageUrl: String, link: String, numPages: String, editionInformation: String, publisherID: String, averageRating: String, ratingsCount: String, bookDescription: String, format: String, startDate: String, endDate: String)
+
+    init(bookID: String, sortAuthor: String)
+    {
+        super.init()
+        
+        // Load Author based on ID from the database
+        
+        let myStoredBooks = myDatabaseConnection.getBook(bookID: bookID)
+        
+        if myStoredBooks.count > 0
+        {
+            // Existing shelf
+            
+            myBookID = bookID
+            
+            for myBook in myStoredBooks
+            {
+                myBookName = myBook.bookName!
+                myPublicationDay = myBook.publicationDay!
+                myPublicationYear = myBook.publicationYear!
+                myPublicationMonth = myBook.publicationMonth!
+                myPublished = myBook.published!
+                myIsbn = myBook.iSBN!
+                myIsbn13 = myBook.iSBN13!
+                myImageUrl = myBook.imageURL!
+                mySmallImageUrl = myBook.smallImageURL!
+                myLargeImageUrl = myBook.largeImageURL!
+                myLink = myBook.link!
+                myNumPages = myBook.numPages!
+                myEditionInformation = myBook.editionInformation!
+                myPublisherID = myBook.publisherID!
+                myAverageRating = myBook.averageRating!
+                myRatingsCount = myBook.ratingsCount!
+                myBookDescription = myBook.bookDescription!
+                myFormat = myBook.format!
+                myStartDate = myBook.startDate!
+                myEndDate = myBook.endDate!
+            }
+        }
+        
+        mySortAuthor = sortAuthor
+        
+        loadAuthors()
+        loadShelves()
+        loadCategories()
+    }
+
+    init(bookID: String, bookName: String, publicationDay: String, publicationYear: String, publicationMonth: String, published: String, ISBN: String, ISBN13: String, imageUrl: String, smallImageUrl: String, largeImageUrl: String, link: String, numPages: String, editionInformation: String, publisherID: String, averageRating: String, ratingsCount: String, bookDescription: String, format: String, startDate: String, endDate: String, sortAuthor: String)
     {
         super.init()
 
@@ -604,6 +661,8 @@ class Book: NSObject
         loadShelves()
         loadCategories()
 
+        mySortAuthor = myAuthorString
+        
         save()
     }
     

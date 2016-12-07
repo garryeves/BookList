@@ -7,15 +7,18 @@
 //
 
 import UIKit
+import DLRadioButton
 
-class booksForAuthorViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, MyPickerDelegate
+class booksForAuthorViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, MyPickerDelegate, UITextFieldDelegate
 {
     @IBOutlet weak var tblBooks: UITableView!
     @IBOutlet weak var lblStatus: UILabel!
     @IBOutlet weak var navTitle: UINavigationItem!
     @IBOutlet weak var txtSearch: UITextField!
     @IBOutlet weak var btnAuthor: UIButton!
-
+    @IBOutlet weak var btnAscending: DLRadioButton!
+    @IBOutlet weak var btnDescending: DLRadioButton!
+    
     var googleData: GoogleBooks!
     var authorName: String!
     var delegate: MyMainDelegate!
@@ -50,6 +53,10 @@ class booksForAuthorViewController: UIViewController, UITableViewDataSource, UIT
         // Populate array of shelves
         
         shelfList = ShelvesList()
+        
+        setSortOrder()
+        
+        txtSearch.delegate = self
     }
     
     override func viewDidDisappear(_ animated: Bool)
@@ -182,6 +189,51 @@ class booksForAuthorViewController: UIViewController, UITableViewDataSource, UIT
         
     @IBAction func btnSearch(_ sender: UIButton)
     {
+        performSearch()
+    }
+    
+    @IBAction func btnSort(_ sender: DLRadioButton)
+    {
+        if sender == btnAscending
+        {
+            googleData.sortOrder = sortOrderAscending
+        }
+        else
+        {
+            googleData.sortOrder = sortOrderDescending
+        }
+        
+        setSortOrder()
+        tblBooks.reloadData()
+    }
+    
+    func setSortOrder()
+    {
+        if googleData.sortOrder == sortOrderAscending
+        {
+            btnAscending.isSelected = true
+            btnDescending.isSelected = false
+        }
+        else
+        {
+            btnAscending.isSelected = false
+            btnDescending.isSelected = true
+        }
+        
+        googleData.sortSearchResults()
+        
+        googleBooksAuthorFinished()
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool
+    {
+        performSearch()
+        
+        return true
+    }
+    
+    func performSearch()
+    {
         // Check to see if there is a search term
         
         if txtSearch.text == "Search text" || txtSearch.text == ""
@@ -192,7 +244,6 @@ class booksForAuthorViewController: UIViewController, UITableViewDataSource, UIT
             self.present(alert, animated: false, completion: nil)
             
             alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default,handler: nil))
-
         }
         else
         {

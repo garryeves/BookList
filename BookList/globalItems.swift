@@ -16,8 +16,11 @@ let myRowColour = UIColor(red: 190/255, green: 254/255, blue: 235/255, alpha: 0.
 let authorOrder = "Sort by Author"
 let shelfOrder = "Sort by Shelf"
 
-let sortOrderShelf = "sortByShelfAuthor"
-let sortOrderAuthor = "sortByAuthor"
+let sortTypeShelf = "sortByShelfAuthor"
+let sortTypeAuthor = "sortByAuthor"
+
+let sortOrderAscending = "ascending"
+let sortOrderDescending = "descending"
 
 let showStatus = "Show"
 let hideStatus = "Hide"

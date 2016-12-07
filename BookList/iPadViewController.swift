@@ -7,17 +7,22 @@
 //
 
 import UIKit
+import DLRadioButton
 
 protocol MyMainDelegate
 {
     func reloadTable()
 }
 
-class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, MyPickerDelegate, MyMainDelegate
+class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, MyPickerDelegate, MyMainDelegate, UITextFieldDelegate
 {
     @IBOutlet weak var tableBooks: UITableView!
     @IBOutlet weak var txtSearch: UITextField!
     @IBOutlet weak var btnSearch: UIButton!
+    @IBOutlet weak var btnAscending: DLRadioButton!
+    @IBOutlet weak var btnDescending: DLRadioButton!
+    @IBOutlet weak var btnByShelf: DLRadioButton!
+    @IBOutlet weak var btnByAuthor: DLRadioButton!
     
     var googleData: GoogleBooks!
     
@@ -64,6 +69,10 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
         tableBooks.register(nib, forHeaderFooterViewReuseIdentifier: "bookListSectionHeader")
         
         shelfList = ShelvesList()
+        
+        txtSearch.delegate = self
+        
+        setGrouping()
     }
     
     override func didReceiveMemoryWarning()
@@ -239,8 +248,82 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
         return 40.0
     }
  
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool
+    {
+        performSearch()
+        
+        return true
+    }
+    
     @IBAction func btnSearch(_ sender: UIButton)
     {
+        performSearch()
+    }
+    
+    func performSearch()
+    {
+        reloadTable()
+    }
+    
+    @IBAction func btnSort(_ sender: DLRadioButton)
+    {
+        if sender == btnAscending
+        {
+            googleData.sortOrder = sortOrderAscending
+        }
+        else
+        {
+            googleData.sortOrder = sortOrderDescending
+        }
+        
+        setSortOrder()
+    }
+    
+    @IBAction func btnGrouping(_ sender: DLRadioButton)
+    {
+        if sender == btnByShelf
+        {
+            googleData.sortType = sortTypeShelf
+        }
+        else
+        {
+            googleData.sortType = sortTypeAuthor
+        }
+        
+        setGrouping()
+    }
+    
+    func setSortOrder()
+    {
+        if googleData.sortOrder == sortOrderAscending
+        {
+            btnAscending.isSelected = true
+            btnDescending.isSelected = false
+        }
+        else
+        {
+            btnAscending.isSelected = false
+            btnDescending.isSelected = true
+        }
+        
+        googleData.sort()
+        
+        reloadTable()
+    }
+    
+    func setGrouping()
+    {
+        if googleData.sortType == sortTypeAuthor
+        {
+            btnByShelf.isSelected = false
+            btnByAuthor.isSelected = true
+        }
+        else
+        {
+            btnByShelf.isSelected = true
+            btnByAuthor.isSelected = false
+        }
+        
         reloadTable()
     }
     
@@ -256,22 +339,6 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
     func reloadTable()
     {
         googleData.filter = txtSearch.text!
-
-        //        googleData.sort()
-        
-//            switch googleData.sortOrder
-//            {
-//                case sortOrderShelf :
-//                    headerCell.btnShelf.isEnabled = false
-//                    headerCell.btnAuthor.isEnabled = true
-//                
-//                case sortOrderAuthor :
-//                    headerCell.btnAuthor.isEnabled = false
-//                    headerCell.btnShelf.isEnabled = true
-//                
-//                default:
-//                    print("ipadTableView: Set sort buttons - hit default for some reason - \(googleData.sortOrder)")
-//            }
     
         tableBooks.reloadData()
     }
@@ -355,13 +422,13 @@ class myBookHeader: UITableViewCell
     
     @IBAction func btnAuthor(_ sender: UIButton)
     {
-        googleData.sortOrder = sortOrderAuthor
+        googleData.sortType = sortTypeAuthor
         notificationCenter.post(name: reloadTableValues, object: nil)
     }
     
     @IBAction func btnShelf(_ sender: UIButton)
     {
-        googleData.sortOrder = sortOrderShelf
+        googleData.sortType = sortTypeShelf
         notificationCenter.post(name: reloadTableValues, object: nil)
     }
 }
@@ -389,6 +456,5 @@ class myBookSectionItem: UITableViewHeaderFooterView
         
         let selectedDictionary = ["section" : section, "state" : newState] as [String : Any]
         notificationCenter.post(name: sectionStateChanged, object: nil, userInfo:selectedDictionary)
-
     }
 }

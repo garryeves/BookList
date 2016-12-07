@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "439B995BBD53DA7DDF3AEBBB9F3CD26D"
-               BuildableName = "Pods_BookList.framework"
-               BlueprintName = "Pods-BookList"
+               BlueprintIdentifier = "F6A77E2753C279F67F70C5C21D6FAE15"
+               BuildableName = "DLRadioButton.framework"
+               BlueprintName = "DLRadioButton"
                ReferencedContainer = "container:Pods.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,9 +45,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "439B995BBD53DA7DDF3AEBBB9F3CD26D"
-            BuildableName = "Pods_BookList.framework"
-            BlueprintName = "Pods-BookList"
+            BlueprintIdentifier = "F6A77E2753C279F67F70C5C21D6FAE15"
+            BuildableName = "DLRadioButton.framework"
+            BlueprintName = "DLRadioButton"
             ReferencedContainer = "container:Pods.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

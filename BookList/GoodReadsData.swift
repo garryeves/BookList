@@ -20,7 +20,7 @@ class GoodReadsData: NSObject
 //    private var oAuth: OAuth1Swift!
     private var myBooks: [Book] = Array()
     private var myWorkingBooks: [Book] = Array()
-    private var mySortOrder: String = sortOrderShelf
+    private var mySortOrder: String = sortTypeShelf
     private var myDisplayArray: [displayItem]!
     private var mySortOrderChanged: Bool = true
     
@@ -421,7 +421,7 @@ class GoodReadsData: NSObject
     {
         switch mySortOrder
         {
-            case sortOrderShelf :
+            case sortTypeShelf :
                     myBooks.sort
                     {
                         if $0.shelfString != $1.shelfString
@@ -441,7 +441,7 @@ class GoodReadsData: NSObject
                         }
                     }
             
-            case sortOrderAuthor :
+            case sortTypeAuthor :
                     myBooks.sort
                     {
                         if $0.authorString != $1.authorString
@@ -466,7 +466,7 @@ class GoodReadsData: NSObject
     private func loadBooks()
     {
         myBooks.removeAll()
-        
+
         for myItem in myDatabaseConnection.getBooks()
         {
             let myBook = Book(bookID: myItem.bookID!)
@@ -494,7 +494,7 @@ class GoodReadsData: NSObject
         
         for myBook in sourceArray
         {
-            if sortOrder == sortOrderShelf
+            if sortOrder == sortTypeShelf
             {
                 workingItem = myBook.shelfString
             }
