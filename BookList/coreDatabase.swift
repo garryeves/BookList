@@ -153,16 +153,14 @@ class coreDatabase: NSObject
             mySelectedShelf = NSEntityDescription.insertNewObject(forEntityName: "Shelves", into: persistentContainer.viewContext) as! Shelves
             
             mySelectedShelf.shelfID = shelfID
-            mySelectedShelf.shelfName = shelfName
-            mySelectedShelf.shelfLink = shelfLink
             mySelectedShelf.changed = false
         }
         else
         {
             mySelectedShelf = myShelf[0]
-            mySelectedShelf.shelfName = shelfName
-            mySelectedShelf.shelfLink = shelfLink
         }
+        mySelectedShelf.shelfName = shelfName
+        mySelectedShelf.shelfLink = shelfLink
         
         saveContext()
     }
@@ -238,24 +236,18 @@ class coreDatabase: NSObject
             mySelectedAuthor = NSEntityDescription.insertNewObject(forEntityName: "Authors", into: persistentContainer.viewContext) as! Authors
             
             mySelectedAuthor.authorID = authorID
-            mySelectedAuthor.authorName = authorName
-            mySelectedAuthor.imageURL = imageURL
-            mySelectedAuthor.smallImageURL = smallImageURL
-            mySelectedAuthor.link = link
-            mySelectedAuthor.averageRating = averageRating
-            mySelectedAuthor.ratingsCount = ratingsCount
             mySelectedAuthor.changed = false
         }
         else
         {
             mySelectedAuthor = myAuthor[0]
-            mySelectedAuthor.authorName = authorName
-            mySelectedAuthor.imageURL = imageURL
-            mySelectedAuthor.smallImageURL = smallImageURL
-            mySelectedAuthor.link = link
-            mySelectedAuthor.averageRating = averageRating
-            mySelectedAuthor.ratingsCount = ratingsCount
         }
+        mySelectedAuthor.authorName = authorName
+        mySelectedAuthor.imageURL = imageURL
+        mySelectedAuthor.smallImageURL = smallImageURL
+        mySelectedAuthor.link = link
+        mySelectedAuthor.averageRating = averageRating
+        mySelectedAuthor.ratingsCount = ratingsCount
         
         saveContext()
     }
@@ -274,6 +266,57 @@ class coreDatabase: NSObject
         {
             print("Error ocurred during execution: \(error)")
             return []
+        }
+    }
+
+    func getBooks(lastUpdate: Date)->[Books]
+    {
+        let fetchRequest = NSFetchRequest<Books>(entityName: "Books")
+        
+        let predicate = NSPredicate(format: "updateTime >= %@", lastUpdate as CVarArg)
+        
+        // Set the predicate on the fetch request
+        fetchRequest.predicate = predicate
+
+        // Execute the fetch request, and cast the results to an array of  objects
+        do
+        {
+            let fetchResults = try persistentContainer.viewContext.fetch(fetchRequest)
+            return fetchResults
+        }
+        catch
+        {
+            print("Error ocurred during execution: \(error)")
+            return []
+        }
+    }
+    
+    func getNextBookOrderNum()-> Int
+    {
+        let fetchRequest = NSFetchRequest<Books>(entityName: "Books")
+
+        fetchRequest.fetchLimit = 1
+        let sortDescriptor = NSSortDescriptor(key: "bookOrder", ascending: false)
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        
+        // Execute the fetch request, and cast the results to an array of  objects
+        do
+        {
+            let fetchResults = try persistentContainer.viewContext.fetch(fetchRequest)
+            
+            if fetchResults.count == 0
+            {
+                return 1
+            }
+            else
+            {
+                return Int(fetchResults[0].bookOrder) + 1
+            }
+        }
+        catch
+        {
+            print("Error ocurred during execution: \(error)")
+            return 0
         }
     }
     
@@ -319,7 +362,28 @@ class coreDatabase: NSObject
         }
     }
     
-    func saveBook(_ bookID: String, bookName: String, publicationDay: String, publicationYear: String, publicationMonth: String, published: String, ISBN: String, ISBN13: String, imageUrl: String, smallImageUrl: String, largeImageUrl: String, link: String, numPages: String, editionInformation: String, publisherID: String, averageRating: String, ratingsCount: String, bookDescription: String, format: String, startDate: String, endDate: String)
+    func getBook(bookOrder: Int)->[Books]
+    {
+        let fetchRequest = NSFetchRequest<Books>(entityName: "Books")
+        
+        let predicate = NSPredicate(format: "bookOrder == \"\(bookOrder)\"")
+        
+        // Set the predicate on the fetch request
+        fetchRequest.predicate = predicate
+        // Execute the fetch request, and cast the results to an array of  objects
+        do
+        {
+            let fetchResults = try persistentContainer.viewContext.fetch(fetchRequest)
+            return fetchResults
+        }
+        catch
+        {
+            print("Error ocurred during execution: \(error)")
+            return []
+        }
+    }
+    
+    func saveBook(_ bookID: String, bookName: String, publicationDay: String, publicationYear: String, publicationMonth: String, published: String, ISBN: String, ISBN13: String, imageUrl: String, smallImageUrl: String, largeImageUrl: String, link: String, numPages: String, editionInformation: String, publisherID: String, averageRating: String, ratingsCount: String, bookDescription: String, format: String, startDate: String, endDate: String, bookOrder: Int, previousBookID: Int)
     {
         let myBook = getBook(bookID: bookID)
         
@@ -329,56 +393,75 @@ class coreDatabase: NSObject
             mySelectedBook = NSEntityDescription.insertNewObject(forEntityName: "Books", into: persistentContainer.viewContext) as! Books
         
             mySelectedBook.bookID = bookID
-            mySelectedBook.bookName = bookName
-            mySelectedBook.publicationDay = publicationDay
-            mySelectedBook.publicationYear = publicationYear
-            mySelectedBook.publicationMonth = publicationMonth
-            mySelectedBook.published = published
-            mySelectedBook.iSBN = ISBN
-            mySelectedBook.iSBN13 = ISBN13
-            mySelectedBook.imageURL = imageUrl
-            mySelectedBook.smallImageURL = smallImageUrl
-            mySelectedBook.largeImageURL = largeImageUrl
-            mySelectedBook.link = link
-            mySelectedBook.numPages = numPages
-            mySelectedBook.editionInformation = editionInformation
-            mySelectedBook.publisherID = publisherID
-            mySelectedBook.averageRating = averageRating
-            mySelectedBook.ratingsCount = ratingsCount
-            mySelectedBook.bookDescription = bookDescription
-            mySelectedBook.format = format
-            mySelectedBook.startDate = startDate
-            mySelectedBook.endDate = endDate
             mySelectedBook.changed = false
         }
         else
         {
             mySelectedBook = myBook[0]
-            mySelectedBook.bookName = bookName
-            mySelectedBook.publicationDay = publicationDay
-            mySelectedBook.publicationYear = publicationYear
-            mySelectedBook.publicationMonth = publicationMonth
-            mySelectedBook.published = published
-            mySelectedBook.iSBN = ISBN
-            mySelectedBook.iSBN13 = ISBN13
-            mySelectedBook.imageURL = imageUrl
-            mySelectedBook.smallImageURL = smallImageUrl
-            mySelectedBook.largeImageURL = largeImageUrl
-            mySelectedBook.link = link
-            mySelectedBook.numPages = numPages
-            mySelectedBook.editionInformation = editionInformation
-            mySelectedBook.publisherID = publisherID
-            mySelectedBook.averageRating = averageRating
-            mySelectedBook.ratingsCount = ratingsCount
-            mySelectedBook.bookDescription = bookDescription
-            mySelectedBook.format = format
-            mySelectedBook.startDate = startDate
-            mySelectedBook.endDate = endDate
         }
+        mySelectedBook.bookName = bookName
+        mySelectedBook.publicationDay = publicationDay
+        mySelectedBook.publicationYear = publicationYear
+        mySelectedBook.publicationMonth = publicationMonth
+        mySelectedBook.published = published
+        mySelectedBook.iSBN = ISBN
+        mySelectedBook.iSBN13 = ISBN13
+        mySelectedBook.imageURL = imageUrl
+        mySelectedBook.smallImageURL = smallImageUrl
+        mySelectedBook.largeImageURL = largeImageUrl
+        mySelectedBook.link = link
+        mySelectedBook.numPages = numPages
+        mySelectedBook.editionInformation = editionInformation
+        mySelectedBook.publisherID = publisherID
+        mySelectedBook.averageRating = averageRating
+        mySelectedBook.ratingsCount = ratingsCount
+        mySelectedBook.bookDescription = bookDescription
+        mySelectedBook.format = format
+        mySelectedBook.startDate = startDate
+        mySelectedBook.endDate = endDate
+        mySelectedBook.bookOrder = Int16(bookOrder)
+        mySelectedBook.previousBookID = Int16(previousBookID)
+        mySelectedBook.updateTime = NSDate()
+
+        saveContext()
+    }
+
+    func syncBookOrder(_ bookID: String, bookOrder: Int, previousBookID: Int, updateTime: NSDate)
+    {
+        let myBook = getBook(bookID: bookID)
+        
+        var mySelectedBook: Books
+        if myBook.count == 0
+        {
+            mySelectedBook = NSEntityDescription.insertNewObject(forEntityName: "Books", into: persistentContainer.viewContext) as! Books
+            
+            mySelectedBook.bookID = bookID
+            mySelectedBook.changed = false
+        }
+        else
+        {
+            mySelectedBook = myBook[0]
+        }
+        mySelectedBook.bookOrder = Int16(bookOrder)
+        mySelectedBook.previousBookID = Int16(previousBookID)
+        mySelectedBook.updateTime = updateTime
         
         saveContext()
     }
 
+    
+    func deleteBook(_ bookID: String)
+    {
+        let myBook = getBook(bookID: bookID)
+        
+        for myItem in myBook
+        {
+            persistentContainer.viewContext.delete(myItem as NSManagedObject)
+        }
+        
+        saveContext()
+    }
+    
     func getBookAuthor(authorName: String)->[BookAuthors]
     {
         let fetchRequest = NSFetchRequest<BookAuthors>(entityName: "BookAuthors")
@@ -454,18 +537,29 @@ class coreDatabase: NSObject
             
             mySelectedBook.bookID = bookID
             mySelectedBook.authorID = authorName
-            mySelectedBook.role = role
             mySelectedBook.changed = false
         }
         else
         {
             mySelectedBook = myBook[0]
-            mySelectedBook.role = role
         }
+        mySelectedBook.role = role
         
         saveContext()
     }
 
+    func deleteBookAuthor(_ bookID: String, authorName: String)
+    {
+        let myBook = getBookAuthor(bookID: bookID, authorName: authorName)
+        
+        for myItem in myBook
+        {
+            persistentContainer.viewContext.delete(myItem as NSManagedObject)
+        }
+        
+        saveContext()
+    }
+    
     func getBookShelf(shelfID: String)->[BookShelves]
     {
         let fetchRequest = NSFetchRequest<BookShelves>(entityName: "BookShelves")
@@ -557,14 +651,13 @@ class coreDatabase: NSObject
             mySelectedBook = NSEntityDescription.insertNewObject(forEntityName: "BookShelves", into: persistentContainer.viewContext) as! BookShelves
             
             mySelectedBook.bookID = bookID
-            mySelectedBook.shelfID = newShelfID
             mySelectedBook.changed = false
         }
         else
         {
             mySelectedBook = myBook[0]
-            mySelectedBook.shelfID = newShelfID
         }
+        mySelectedBook.shelfID = newShelfID
         
         saveContext()
     }
@@ -655,14 +748,13 @@ class coreDatabase: NSObject
             mySelectedBook = NSEntityDescription.insertNewObject(forEntityName: "BookCategories", into: persistentContainer.viewContext) as! BookCategories
             
             mySelectedBook.bookID = bookID
-            mySelectedBook.category = category
             mySelectedBook.changed = false
         }
         else
         {
             mySelectedBook = myBook[0]
-            mySelectedBook.category = category
         }
+        mySelectedBook.category = category
         
         saveContext()
     }
@@ -679,7 +771,6 @@ class coreDatabase: NSObject
         saveContext()
     }
 
-    
     func getBookCategoryList()->[String]
     {
         var myWorkingArray: [String] = Array()
@@ -817,5 +908,4 @@ class coreDatabase: NSObject
         
         saveContext()
     }
-
 }

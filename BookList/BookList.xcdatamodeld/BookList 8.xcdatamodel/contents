@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="11759" systemVersion="16C67" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="BookList">
+    <entity name="Authors" representedClassName="Authors" syncable="YES" codeGenerationType="class">
+        <attribute name="authorID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="authorName" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="averageRating" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="changed" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="imageURL" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="link" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="ratingsCount" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="smallImageURL" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="BookAuthors" representedClassName="BookAuthors" syncable="YES" codeGenerationType="class">
+        <attribute name="authorID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="bookID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="changed" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="role" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="BookCategories" representedClassName="BookCategories" syncable="YES" codeGenerationType="class">
+        <attribute name="bookID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="category" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="changed" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
+    </entity>
+    <entity name="BookImage" representedClassName="BookImage" syncable="YES" codeGenerationType="class">
+        <attribute name="bookID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="bookImage" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="usedDate" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+    </entity>
+    <entity name="Books" representedClassName="Books" syncable="YES" codeGenerationType="class">
+        <attribute name="averageRating" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="bookDescription" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="bookID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="bookName" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="bookOrder" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="changed" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="editionInformation" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="endDate" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="format" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="imageURL" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="iSBN" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="iSBN13" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="largeImageURL" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="link" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="numPages" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="previousBookID" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="publicationDay" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="publicationMonth" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="publicationYear" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="published" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="publisherID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="ratingsCount" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="smallImageURL" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="startDate" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="updateTime" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+    </entity>
+    <entity name="BookShelves" representedClassName="BookShelves" syncable="YES" codeGenerationType="class">
+        <attribute name="bookID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="changed" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="shelfID" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="Shelves" representedClassName="Shelves" syncable="YES" codeGenerationType="class">
+        <attribute name="changed" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="shelfID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="shelfLink" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="shelfName" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="Authors" positionX="-54" positionY="144" width="128" height="165"/>
+        <element name="BookAuthors" positionX="-18" positionY="162" width="128" height="105"/>
+        <element name="BookCategories" positionX="-27" positionY="135" width="128" height="90"/>
+        <element name="BookImage" positionX="-27" positionY="135" width="128" height="90"/>
+        <element name="Books" positionX="-63" positionY="-18" width="128" height="420"/>
+        <element name="BookShelves" positionX="0" positionY="171" width="128" height="90"/>
+        <element name="Shelves" positionX="-36" positionY="153" width="128" height="105"/>
+    </elements>
+</model>

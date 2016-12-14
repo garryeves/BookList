@@ -28,6 +28,7 @@ class bookDetailsViewController: UIViewController, UITableViewDataSource, UITabl
     @IBOutlet weak var btnGetBooksForAuthor: UIButton!
     
     var googleData: GoogleBooks!
+    var myBooks: booksToDisplay!
     var section: Int!
     var row: Int!
     var delegate: MyMainDelegate!
@@ -92,6 +93,8 @@ class bookDetailsViewController: UIViewController, UITableViewDataSource, UITabl
             {
                 displayArray.append(myItem.shelfName)
             }
+            
+            displayArray.append("Remove from current Shelf")
             
             stringPicker.displayArray = displayArray
             stringPicker.delegate = self
@@ -161,7 +164,7 @@ class bookDetailsViewController: UIViewController, UITableViewDataSource, UITabl
     
     func populateScreen()
     {
-        let workingBook = googleData.books[section].books[row]
+        let workingBook = myBooks.books[section].books[row]
         
         workingAuthors = workingBook.authors
 
@@ -281,13 +284,25 @@ class bookDetailsViewController: UIViewController, UITableViewDataSource, UITabl
     {
         // Go and get the book details from the database
         
-        let workingBook = googleData.books[section].books[row]
+        let workingBook = myBooks.books[section].books[row]
         
-        workingBook.moveBetweenShelves(fromShelfID: workingBook.shelves[0].shelfID, toShelfID: shelfList.shelves[index].shelfID, googleData: googleData)
+        if index >= shelfList.shelves.count
+        {
+            // remove from current shelf
+            workingBook.removeFromShelf(shelfID: workingBook.shelves[0].shelfID, googleData: googleData)
+            
+            // Remove entry from the database
+            
+            workingBook.removeFromDatabase()
+        }
+        else
+        {
+            workingBook.moveBetweenShelves(fromShelfID: workingBook.shelves[0].shelfID, toShelfID: shelfList.shelves[index].shelfID, googleData: googleData)
+        }
         
         btnShelf.setTitle(shelfList.shelves[index].shelfName, for: .normal)
         
-        googleData.sort()
+        myBooks.sort()
     }
 }
 

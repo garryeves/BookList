@@ -18,6 +18,7 @@ let shelfOrder = "Sort by Shelf"
 
 let sortTypeShelf = "sortByShelfAuthor"
 let sortTypeAuthor = "sortByAuthor"
+let sortTypeTitle = "sortByTitle"
 
 let sortOrderAscending = "ascending"
 let sortOrderDescending = "descending"
@@ -26,3 +27,5 @@ let showStatus = "Show"
 let hideStatus = "Hide"
 
 var googleUserDetails: GoogleUser!
+
+let defaultDate = Date(timeIntervalSince1970: 0)

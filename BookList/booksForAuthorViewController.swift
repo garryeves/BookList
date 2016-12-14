@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import DLRadioButton
 
 class booksForAuthorViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, MyPickerDelegate, UITextFieldDelegate
 {
@@ -16,8 +15,6 @@ class booksForAuthorViewController: UIViewController, UITableViewDataSource, UIT
     @IBOutlet weak var navTitle: UINavigationItem!
     @IBOutlet weak var txtSearch: UITextField!
     @IBOutlet weak var btnAuthor: UIButton!
-    @IBOutlet weak var btnAscending: DLRadioButton!
-    @IBOutlet weak var btnDescending: DLRadioButton!
     
     var googleData: GoogleBooks!
     var authorName: String!
@@ -192,34 +189,8 @@ class booksForAuthorViewController: UIViewController, UITableViewDataSource, UIT
         performSearch()
     }
     
-    @IBAction func btnSort(_ sender: DLRadioButton)
-    {
-        if sender == btnAscending
-        {
-            googleData.sortOrder = sortOrderAscending
-        }
-        else
-        {
-            googleData.sortOrder = sortOrderDescending
-        }
-        
-        setSortOrder()
-        tblBooks.reloadData()
-    }
-    
     func setSortOrder()
     {
-        if googleData.sortOrder == sortOrderAscending
-        {
-            btnAscending.isSelected = true
-            btnDescending.isSelected = false
-        }
-        else
-        {
-            btnAscending.isSelected = false
-            btnDescending.isSelected = true
-        }
-        
         googleData.sortSearchResults()
         
         googleBooksAuthorFinished()
@@ -280,7 +251,19 @@ class booksForAuthorViewController: UIViewController, UITableViewDataSource, UIT
 
             let tempShelf = Shelf(shelfName: bookList[selectedBook].currentShelf)
             
-            myBookEntry.moveBetweenShelves(fromShelfID: tempShelf.shelfID, toShelfID: shelfList.shelves[index].shelfID, googleData: googleData)
+            if index >= shelfList.shelves.count
+            {
+                // remove from current shelf
+                myBookEntry.removeFromShelf(shelfID: tempShelf.shelfID, googleData: googleData)
+                
+                // Remove entry from the database
+                
+                myBookEntry.removeFromDatabase()
+            }
+            else
+            {
+                myBookEntry.moveBetweenShelves(fromShelfID: tempShelf.shelfID, toShelfID: shelfList.shelves[index].shelfID, googleData: googleData)
+            }
             
             bookList[selectedBook].newShelf = shelfList.shelves[index].shelfName
         }

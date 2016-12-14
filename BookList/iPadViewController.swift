@@ -23,10 +23,13 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
     @IBOutlet weak var btnDescending: DLRadioButton!
     @IBOutlet weak var btnByShelf: DLRadioButton!
     @IBOutlet weak var btnByAuthor: DLRadioButton!
+    @IBOutlet weak var btnByTitle: DLRadioButton!
+    @IBOutlet weak var btnEditOrder: UIButton!
     
     var googleData: GoogleBooks!
+
+    private var myBooks: booksToDisplay!
     
-//    private var headerCell: myBookHeader!
     private var myShelvesArray: [Shelf]!
     private var row: Int = 0
     private var selectedBookEntry: Book!
@@ -36,16 +39,13 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
     {
         super.viewDidLoad()
 
+        myBooks = booksToDisplay()
+        
         notificationCenter.addObserver(self, selector: #selector(self.googleDataBooksLoaded), name: goodReadsBookLoadFinished, object: nil)
         notificationCenter.addObserver(self, selector: #selector(self.reloadTable), name: reloadTableValues, object: nil)
         notificationCenter.addObserver(self, selector: #selector(self.updateState(_:)), name: sectionStateChanged, object: nil)
         notificationCenter.addObserver(self, selector: #selector(self.changeBookShelf(_:)), name: changeMainBookShelfFinished, object: nil)
 
- //       headerCell = tableBooks.dequeueReusableCell(withIdentifier: "headerCell") as! myBookHeader
- //       headerCell.googleData = googleData
-        
- //       tableBooks.tableHeaderView = headerCell
-        
         // LoadShelf details into array
         
         myShelvesArray = Array()
@@ -57,7 +57,7 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
         if GIDSignIn.sharedInstance().hasAuthInKeychain()
         {
             // Go and get the list of shelves from googleData, and then make sure we have populated them into the data table
-            
+
             googleData.getBooks()
         }
         else
@@ -71,6 +71,17 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
         shelfList = ShelvesList()
         
         txtSearch.delegate = self
+        
+        btnAscending.setTitle("Ascending", for: .normal)
+        btnAscending.setTitleColor(UIColor.black, for: .normal)
+        btnDescending.setTitle("Descending", for: .normal)
+        btnDescending.setTitleColor(UIColor.black, for: .normal)
+        btnByShelf.setTitle("Shelf", for: .normal)
+        btnByShelf.setTitleColor(UIColor.black, for: .normal)
+        btnByAuthor.setTitle("Author", for: .normal)
+        btnByAuthor.setTitleColor(UIColor.black, for: .normal)
+        btnByTitle.setTitle("Title", for: .normal)
+        btnByTitle.setTitleColor(UIColor.black, for: .normal)
         
         setGrouping()
     }
@@ -91,6 +102,8 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
                 let workingSender = sender as! IndexPath
                 
                 bookDetailView.googleData = googleData
+                bookDetailView.myBooks = myBooks
+                
                 bookDetailView.section = workingSender.section
                 bookDetailView.row = workingSender.row
                 bookDetailView.delegate = self
@@ -106,6 +119,8 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
                 {
                     displayArray.append(myItem.shelfName)
                 }
+                
+                displayArray.append("Remove from current Shelf")
                 
                 stringPicker.displayArray = displayArray
                 stringPicker.delegate = self
@@ -124,14 +139,14 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
         
     func numberOfSections(in tableView: UITableView) -> Int
     {
-        return googleData.books.count
+        return myBooks.books.count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
     {
-        if googleData.books[section].state == showStatus
+        if myBooks.books[section].state == showStatus
         {
-            return googleData.books[section].books.count
+            return myBooks.books[section].books.count
         }
         else
         {
@@ -145,11 +160,11 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
         
 //        cell.lblTitle.text = "\(googleData.books[(indexPath as NSIndexPath).row].bookName) - \(googleData.books[(indexPath as NSIndexPath).row].publishedDate)"
         
-        cell.lblTitle.text = googleData.books[indexPath.section].books[indexPath.row].bookName
+        cell.lblTitle.text = myBooks.books[indexPath.section].books[indexPath.row].bookName
         
         var authorName = ""
 
-        for myItem in googleData.books[indexPath.section].books[indexPath.row].authors
+        for myItem in myBooks.books[indexPath.section].books[indexPath.row].authors
         {
             if authorName != ""
             {
@@ -161,9 +176,9 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
         
         cell.lblAuthor.text = authorName
         
-        cell.btnShelf.setTitle(googleData.books[indexPath.section].books[indexPath.row].shelves[0].shelfName, for: .normal)
+        cell.btnShelf.setTitle(myBooks.books[indexPath.section].books[indexPath.row].shelves[0].shelfName, for: .normal)
 
-        if googleData.books[indexPath.section].books[indexPath.row].imageUrl == ""
+        if myBooks.books[indexPath.section].books[indexPath.row].imageUrl == ""
         {
             cell.imgView.isHidden = true
         }
@@ -173,16 +188,16 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
 
             // check to see if we already have an image for the book
             
-            let myImage = myDatabaseConnection.getImage(bookID: googleData.books[indexPath.section].books[indexPath.row].bookID)
+            let myImage = myDatabaseConnection.getImage(bookID: myBooks.books[indexPath.section].books[indexPath.row].bookID)
             
             if myImage == nil
             {
-                let url = URL(string: googleData.books[indexPath.section].books[indexPath.row].imageUrl)
+                let url = URL(string: myBooks.books[indexPath.section].books[indexPath.row].imageUrl)
                 let data = try? Data(contentsOf: url!) //make sure your image in this url does exist, otherwise unwrap in a if let check / try-catch
                 
                 let workingImage = UIImage(data: data!)
                 
-                myDatabaseConnection.saveImage(googleData.books[indexPath.section].books[indexPath.row].bookID, image: workingImage!)
+                myDatabaseConnection.saveImage(myBooks.books[indexPath.section].books[indexPath.row].bookID, image: workingImage!)
                 cell.imgView.image = workingImage
             }
             else
@@ -195,7 +210,7 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
 //            cell.imgView.image = UIImage(data: data!)
         }
         
-        cell.bookRecord = googleData.books[indexPath.section].books[indexPath.row]
+        cell.bookRecord = myBooks.books[indexPath.section].books[indexPath.row]
         
         return cell
     }
@@ -225,7 +240,7 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
         header.lblDescription.font = UIFont.boldSystemFont(ofSize: 16.0)
         header.btnDisclosure.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16.0)
         
-        if googleData.books[section].state == showStatus
+        if myBooks.books[section].state == showStatus
         {
             header.btnDisclosure.setTitle("-", for: .normal)
         }
@@ -235,9 +250,16 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
         }
         
         header.section = section
-        header.currentState = googleData.books[section].state
+        header.currentState = myBooks.books[section].state
         
-        header.lblDescription.text = "\(googleData.books[section].itemName) - \(googleData.books[section].books.count) books"
+        if myBooks.books[section].books.count == 1
+        {
+            header.lblDescription.text = "\(myBooks.books[section].itemName) - \(myBooks.books[section].books.count) book"
+        }
+        else
+        {
+            header.lblDescription.text = "\(myBooks.books[section].itemName) - \(myBooks.books[section].books.count) books"
+        }
         
         return header
     }
@@ -247,6 +269,58 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
     {
         return 40.0
     }
+        
+    func tableView(_ tableView: UITableView,
+                   editingStyleForRowAt indexPath: IndexPath) -> UITableViewCellEditingStyle
+    {
+        return .none
+    }
+    
+    func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool
+    {
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to toIndexPath: IndexPath)
+    {
+    print("Moving from \(fromIndexPath.row) to \(toIndexPath.row)")
+//        if tableView == tblTracks
+//        {
+//            // Make calls in order to change the ordering of the rows
+//            mySelectedStyle.tracks[(fromIndexPath as NSIndexPath).row].reorderRows(mySelectedStyle.tracks[(toIndexPath as NSIndexPath).row].styleOrder)
+//            
+//            mySelectedStyle.reloadTracks()
+//            tblTracks.reloadData()
+//        }
+    }
+    
+//    func tableView(_ tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: IndexPath)
+//    {
+//        if tableView == tblStyles
+//        {
+//            if editingStyle == .delete
+//            {
+//                // Get row details to delete
+//                
+//                myProgramStyles.styles[(indexPath as NSIndexPath).row].delete()
+//                
+//                myProgramStyles.reload()
+//                tblStyles.reloadData()
+//            }
+//        }
+//        else
+//        {
+//            if editingStyle == .delete
+//            {
+//                // Get row details to delete
+//                
+//                mySelectedStyle.tracks[(indexPath as NSIndexPath).row].delete()
+//                
+//                mySelectedStyle.reloadTracks()
+//                tblTracks.reloadData()
+//            }
+//        }
+//    }
  
     func textFieldShouldReturn(_ textField: UITextField) -> Bool
     {
@@ -269,11 +343,11 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
     {
         if sender == btnAscending
         {
-            googleData.sortOrder = sortOrderAscending
+            myBooks.sortOrder = sortOrderAscending
         }
         else
         {
-            googleData.sortOrder = sortOrderDescending
+            myBooks.sortOrder = sortOrderDescending
         }
         
         setSortOrder()
@@ -281,21 +355,41 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     @IBAction func btnGrouping(_ sender: DLRadioButton)
     {
-        if sender == btnByShelf
+        switch sender
         {
-            googleData.sortType = sortTypeShelf
+            case btnByShelf:
+                myBooks.sortType = sortTypeShelf
+            
+            case btnByAuthor:
+                myBooks.sortType = sortTypeAuthor
+            
+            case btnByTitle:
+                myBooks.sortType = sortTypeTitle
+            
+            default:
+                print("ipadView - btnGrouping hit default - \(sender)")
+        }
+
+        setGrouping()
+    }
+    
+    @IBAction func btnEditOrder(_ sender: UIButton)
+    {
+        if sender.currentTitle == "Edit Display Order"
+        {
+            tableBooks.setEditing(true, animated: true)
+            btnEditOrder.setTitle("End Edit", for: .normal)
         }
         else
         {
-            googleData.sortType = sortTypeAuthor
+            tableBooks.setEditing(false, animated: true)
+            btnEditOrder.setTitle("Edit Display Order", for: .normal)
         }
-        
-        setGrouping()
     }
     
     func setSortOrder()
     {
-        if googleData.sortOrder == sortOrderAscending
+        if myBooks.sortOrder == sortOrderAscending
         {
             btnAscending.isSelected = true
             btnDescending.isSelected = false
@@ -306,22 +400,35 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
             btnDescending.isSelected = true
         }
         
-        googleData.sort()
+        myBooks.sort()
         
         reloadTable()
     }
     
     func setGrouping()
     {
-        if googleData.sortType == sortTypeAuthor
+        switch myBooks.sortType
         {
-            btnByShelf.isSelected = false
-            btnByAuthor.isSelected = true
-        }
-        else
-        {
-            btnByShelf.isSelected = true
-            btnByAuthor.isSelected = false
+            case sortTypeShelf:
+                btnByShelf.isSelected = true
+                btnByAuthor.isSelected = false
+                btnByTitle.isSelected = false
+                btnEditOrder.isHidden = true
+            
+            case sortTypeAuthor:
+                btnByShelf.isSelected = false
+                btnByAuthor.isSelected = true
+                btnByTitle.isSelected = false
+                btnEditOrder.isHidden = false
+            
+            case sortTypeTitle:
+                btnByShelf.isSelected = false
+                btnByAuthor.isSelected = false
+                btnByTitle.isSelected = true
+                btnEditOrder.isHidden = true
+            
+            default:
+                print("ipadView - setGrouping hit default - \(myBooks.sortType)")
         }
         
         reloadTable()
@@ -348,7 +455,7 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
         let section = (notification as NSNotification).userInfo!["section"] as! Int
         let state = (notification as NSNotification).userInfo!["state"] as! String
 
-        googleData.books[section].state = state
+        myBooks.books[section].state = state
         
         reloadTable()
     }
@@ -369,9 +476,23 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
     {
         // Go and get the book details from the database
         
-        selectedBookEntry.moveBetweenShelves(fromShelfID: selectedBookEntry.shelves[0].shelfID, toShelfID: shelfList.shelves[index].shelfID, googleData: googleData)
+        // first need to check to see if we have the remove option
         
-        googleData.sort()
+        if index >= shelfList.shelves.count
+        {
+            // remove from current shelf
+            selectedBookEntry.removeFromShelf(shelfID: selectedBookEntry.shelves[0].shelfID, googleData: googleData)
+            
+            // Remove entry from the database
+            
+            selectedBookEntry.removeFromDatabase()
+        }
+        else
+        {
+            selectedBookEntry.moveBetweenShelves(fromShelfID: selectedBookEntry.shelves[0].shelfID, toShelfID: shelfList.shelves[index].shelfID, googleData: googleData)
+        }
+        
+        myBooks.sort()
         
         tableBooks.reloadData()
     }
@@ -412,7 +533,7 @@ class myBookHeader: UITableViewCell
     @IBOutlet weak var btnShelf: UIButton!
     @IBOutlet weak var txtTitle: UILabel!
 
-    var googleData: GoogleBooks!
+    var myBooks: booksToDisplay!
     
     override func layoutSubviews()
     {
@@ -422,13 +543,13 @@ class myBookHeader: UITableViewCell
     
     @IBAction func btnAuthor(_ sender: UIButton)
     {
-        googleData.sortType = sortTypeAuthor
+        myBooks.sortType = sortTypeAuthor
         notificationCenter.post(name: reloadTableValues, object: nil)
     }
     
     @IBAction func btnShelf(_ sender: UIButton)
     {
-        googleData.sortType = sortTypeShelf
+        myBooks.sortType = sortTypeShelf
         notificationCenter.post(name: reloadTableValues, object: nil)
     }
 }
