@@ -393,12 +393,29 @@ class coreDatabase: NSObject
             mySelectedBook = NSEntityDescription.insertNewObject(forEntityName: "Books", into: persistentContainer.viewContext) as! Books
         
             mySelectedBook.bookID = bookID
+            mySelectedBook.bookOrder = Int16(bookOrder)
+            mySelectedBook.previousBookID = Int16(previousBookID)
+            mySelectedBook.updateTime = NSDate()
             mySelectedBook.changed = false
         }
         else
         {
             mySelectedBook = myBook[0]
+            
+            // Only want to update these if at least one of them has changed
+            
+            if bookOrder != 0 || previousBookID != 0
+            {
+                // If both are 0 then it means we are loading from Google so so not want to make any changes to the bookOrder
+                if mySelectedBook.bookOrder != Int16(bookOrder) || mySelectedBook.previousBookID != Int16(previousBookID)
+                {
+                    mySelectedBook.bookOrder = Int16(bookOrder)
+                    mySelectedBook.previousBookID = Int16(previousBookID)
+                    mySelectedBook.updateTime = NSDate()
+                }
+            }
         }
+        
         mySelectedBook.bookName = bookName
         mySelectedBook.publicationDay = publicationDay
         mySelectedBook.publicationYear = publicationYear
@@ -419,9 +436,6 @@ class coreDatabase: NSObject
         mySelectedBook.format = format
         mySelectedBook.startDate = startDate
         mySelectedBook.endDate = endDate
-        mySelectedBook.bookOrder = Int16(bookOrder)
-        mySelectedBook.previousBookID = Int16(previousBookID)
-        mySelectedBook.updateTime = NSDate()
 
         saveContext()
     }

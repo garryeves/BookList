@@ -135,13 +135,20 @@ class booksToDisplay: NSObject
                     }
                     else
                     {
-                        if mySortOrder == sortOrderAscending
+                        if $0.previousBookID != $1.previousBookID
                         {
-                            return $0.publishedDate < $1.publishedDate
+                            return $0.previousBookID < $1.previousBookID
                         }
                         else
                         {
-                            return $1.publishedDate < $0.publishedDate
+                            if mySortOrder == sortOrderAscending
+                            {
+                                return $0.publishedDate < $1.publishedDate
+                            }
+                            else
+                            {
+                                return $1.publishedDate < $0.publishedDate
+                            }
                         }
                     }
                 }
@@ -1028,17 +1035,27 @@ class Book: NSObject
         if myParentBook.bookOrder == 0
         { // Top level book so no need to loop through children
             myParentBook.bookOrder = myDatabaseConnection.getNextBookOrderNum()
-            
+
+            // Call the save to Cloud
+
+            myCloud.saveBookOrder(book: myParentBook)
+
             myPreviousBookID = myParentBook.bookOrder
+            save()
+            // Call the save to Cloud
+            myCloud.saveBookOrder(book: self)
         }
         else
-        { // No top level so need to check for children
+        { // Not top level so need to check for children
             let myFirstChild = Book(bookOrder: myParentBook.bookOrder)
             
             // Now go through any further items in order to ensure maintain the order
             myFirstChild.changeBookOrder(direction: incrementUp)
          
             myPreviousBookID = myParentBook.bookOrder
+            save()
+            // Call the save to Cloud
+            myCloud.saveBookOrder(book: self)
         }
     }
 
@@ -1056,7 +1073,10 @@ class Book: NSObject
                 
                 child.changeBookOrder(direction: incrementUp)
                 
-                child.myPreviousBookID = myBookOrder
+                child.previousBookID = myBookOrder
+                
+                // Call the save to Cloud
+                myCloud.saveBookOrder(book: child)
             }
         }
         else
@@ -1071,7 +1091,10 @@ class Book: NSObject
                 
                 child.changeBookOrder(direction: incrementUp)
                 
-                child.myPreviousBookID = myPreviousBookID
+                child.previousBookID = myPreviousBookID
+                
+                // Call the save to Cloud
+                myCloud.saveBookOrder(book: child)
             }
         }
     }

@@ -10,6 +10,7 @@ import Foundation
 import UIKit
 
 var myDatabaseConnection: coreDatabase!
+var myCloud: CloudKitInteraction = CloudKitInteraction()
 
 let myRowColour = UIColor(red: 190/255, green: 254/255, blue: 235/255, alpha: 0.25)
 

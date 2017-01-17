@@ -328,10 +328,31 @@ class CloudKitInteraction: NSObject
             saveDeviceRecord(syncDate: startSync)
         }
     }
+
+    func saveBookOrder(book: Book)
+    {
+        let startSync = Date()
+        
+        // Is the device connected to the Internet
+        
+        if connected()
+        {
+            // Get list of items to save
+            
+            let myBookRecords = myDatabaseConnection.getBook(bookID: book.bookID)
+            
+            for myItem in myBookRecords
+            {
+                saveBookOrderToCloud(workingRecord: myItem)
+            }
+            
+            saveDeviceRecord(syncDate: startSync)
+        }
+    }
     
     private func saveBookOrderToCloud(workingRecord: Books)
     {
-        let predicate = NSPredicate(format: "bookID == \(workingRecord.bookID)")
+        let predicate = NSPredicate(format: "bookID == \"\(workingRecord.bookID!)\"")
         
         let query = CKQuery(recordType: "bookOrder", predicate: predicate)
         

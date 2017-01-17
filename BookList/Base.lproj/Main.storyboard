@@ -73,10 +73,10 @@
                                 <color key="sectionIndexBackgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="bookCell" rowHeight="121" id="uxe-XR-xmN" customClass="myBookItem" customModule="BookList" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="56" width="728" height="121"/>
+                                        <rect key="frame" x="0.0" y="55.5" width="728" height="121"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="uxe-XR-xmN" id="TOa-q0-lF7">
-                                            <rect key="frame" x="0.0" y="0.0" width="728" height="120"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="728" height="120.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Ek-gV-P9S" userLabel="lblAuthor">
@@ -507,7 +507,7 @@
                                         <rect key="frame" x="0.0" y="28" width="250" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="p29-X5-RiL" id="Nh2-og-9xQ">
-                                            <rect key="frame" x="0.0" y="0.0" width="250" height="43"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="250" height="43.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mwL-U1-aT4" userLabel="lblAuthor">
@@ -765,7 +765,7 @@
                                         <rect key="frame" x="0.0" y="28" width="728" height="121"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="ynq-h6-ANx" id="QJL-gO-VBU">
-                                            <rect key="frame" x="0.0" y="0.0" width="728" height="120"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="728" height="120.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HFt-9Y-2RE" userLabel="lblName">
@@ -941,10 +941,10 @@
                                 <color key="sectionIndexBackgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="bookCell" rowHeight="67" id="Stt-AT-EXR" customClass="myBookItem" customModule="BookList" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="56" width="728" height="67"/>
+                                        <rect key="frame" x="0.0" y="55.5" width="728" height="67"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Stt-AT-EXR" id="1sp-iz-LHl">
-                                            <rect key="frame" x="0.0" y="0.0" width="728" height="66"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="728" height="66.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6K7-9U-VMx" userLabel="lblAuthor">
@@ -989,10 +989,10 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="headerCell" rowHeight="67" id="j7L-9p-4JF" customClass="myBookHeader" customModule="BookList" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="123" width="728" height="67"/>
+                                        <rect key="frame" x="0.0" y="122.5" width="728" height="67"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="j7L-9p-4JF" id="22g-h3-ur9">
-                                            <rect key="frame" x="0.0" y="0.0" width="728" height="66"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="728" height="66.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="wCa-pS-G5U" userLabel="btnAuthor">

@@ -209,6 +209,9 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
 //            let data = try? Data(contentsOf: url!) //make sure your image in this url does exist, otherwise unwrap in a if let check / try-catch
 //            cell.imgView.image = UIImage(data: data!)
         }
+
+        
+ print("Book = \(myBooks.books[indexPath.section].books[indexPath.row].bookName) - order = \(myBooks.books[indexPath.section].books[indexPath.row].bookOrder) - \(myBooks.books[indexPath.section].books[indexPath.row].previousBookID)")
         
         cell.bookRecord = myBooks.books[indexPath.section].books[indexPath.row]
         
@@ -283,7 +286,17 @@ class iPadViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to toIndexPath: IndexPath)
     {
-    print("Moving from \(fromIndexPath.row) to \(toIndexPath.row)")
+        let sourceBook = myBooks.books[fromIndexPath.section].books[fromIndexPath.row]
+        let targetBook = myBooks.books[toIndexPath.section].books[toIndexPath.row]
+        
+        print("Source = \(sourceBook.bookName) - \(sourceBook.bookID) - \(sourceBook.bookOrder)")
+        print("Target = \(targetBook.bookName) - \(targetBook.bookID) - \(targetBook.bookOrder)")
+        
+        print("")
+        
+        
+        sourceBook.setBookOrder(parentBookID: targetBook.bookID)
+        
 //        if tableView == tblTracks
 //        {
 //            // Make calls in order to change the ordering of the rows
